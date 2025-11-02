@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { useSpendVolume7dData } from "@/hooks/useSpendVolume7D"
+import { useSpendVolume7dData } from "@/hooks/useSpendVolume7d"
 
 export function SpendVolume7d() {
   const { data, loading, error } = useSpendVolume7dData()
