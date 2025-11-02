@@ -10,7 +10,7 @@ const app = express();
 
 // ✅ Enable CORS
 app.use(cors({
-  origin: ["http://localhost:3000"], // frontend URL
+  origin: ["http://localhost:3000", "https://avici-public-dashboard.vercel.app"], // frontend URL
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
