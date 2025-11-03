@@ -97,14 +97,14 @@ export default function Dashboard() {
               </div>
               
               {timePeriod === "24h" && (
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <SpendHistogram />
                   <TransactionHistogram />
                 </div>
               )}
 
               {timePeriod === "7d" && (
-                <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <SpendVolume7d/>
                   <CountHistogram7d/>
                 </div>
