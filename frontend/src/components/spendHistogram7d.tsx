@@ -58,7 +58,7 @@ export function SpendVolume7d() {
               width={45}
             />
             <Tooltip 
-              formatter={(value: number) => [`$${(value/100).toLocaleString()}`, 'Spend']}
+              formatter={(value: number) => [`$${(value).toLocaleString()}`, 'Spend']}
               labelFormatter={(label) => label}
               contentStyle={{ 
                 backgroundColor: 'grey', 

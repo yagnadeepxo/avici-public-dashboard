@@ -30,11 +30,8 @@ export function useSpendCount7dData() {
         
         // Transform the data for the histogram
         const histogramData: HistogramDataPoint[] = apiData.map(item => {
-          const date = new Date(item.date)
-          const dayName = date.toLocaleDateString('en-US', { weekday: 'short' })
-          
           return {
-            day: dayName,
+            day: item.date,
             transactions: item.total_transactions
           }
         })
