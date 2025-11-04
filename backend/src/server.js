@@ -16,8 +16,24 @@ app.use(cors({
 }));
 
 app.get("/api/stats", async (req, res) => {
-  const { period } = req.query;
+  const { period, date } = req.query;
   try {
+    // If date is provided, fetch specific date from daily_stats
+    if (date) {
+      const { data, error } = await supabase
+        .from("daily_stats")
+        .select("*")
+        .eq("date", date)
+        .single();
+
+      if (error) throw error;
+
+      // Return as array to maintain consistency with period queries
+      res.json(data ? [data] : []);
+      return;
+    }
+
+    // Original period-based logic
     let table = period === "24H" ? "hourly_stats" : "daily_stats";
     let limit = period === "7D" ? 7 : period === "30D" ? 30 : 24;
 
