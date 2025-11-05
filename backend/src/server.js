@@ -5,7 +5,8 @@ const { runHourlyJob } = require("./cron/hourly");
 const { runDailyJob } = require("./cron/daily");
 const { supabase } = require("./db");
 require("dotenv").config();
-
+const walletTransactionRoute = require("./routes/wallet_transaction_route/wallet_transaction");
+const walletSwapRoute = require("./routes/wallet_swap_route/wallet_swaps");
 const app = express();
 
 // ✅ Enable CORS
@@ -51,6 +52,8 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
+app.use("/api/wallet", walletTransactionRoute);
+app.use("/api/wallet", walletSwapRoute);
 // ⏰ Cron Jobs
 cron.schedule("0 * * * *", runHourlyJob); // every hour
 cron.schedule("0 0 * * *", runDailyJob);  // every day at midnight
