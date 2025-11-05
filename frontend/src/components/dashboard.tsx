@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { useStats } from "@/hooks/useDashboardStats"
 import { usePercentChange } from "@/hooks/usePercentChange"
 import { useVirtualAccountStats } from "@/hooks/useVirtualAccountStats"
+import { useWalletTransactionStats } from "@/hooks/useWalletTransactionStats"
+import { useWalletSwapStats } from "@/hooks/useWalletSwapStats"
 import { SpendHistogram } from "@/components/spendHistogram"
 import { TransactionHistogram } from "@/components/countHistogram"
 import { SpendVolume7d } from "@/components/spendHistogram7d"
@@ -71,6 +73,10 @@ export default function Dashboard() {
     loading: vaLoading, 
     error: vaError 
   } = useVirtualAccountStats(timePeriod)
+
+  // Wallet data
+  const { data: walletTxData, loading: walletTxLoading, error: walletTxError } = useWalletTransactionStats()
+  const { data: walletSwapData, loading: walletSwapLoading, error: walletSwapError } = useWalletSwapStats()
 
   const shouldShowChanges = timePeriod === "all" || timePeriod === "24h"
 
@@ -220,13 +226,52 @@ export default function Dashboard() {
               </>
             )}
 
-            {/* Wallet Category - Placeholder */}
+            {/* Wallet Category */}
             {category === "wallet" && (
-              <Card className="border border-border bg-background">
-                <CardContent className="p-8 text-center">
-                  <p className="text-muted-foreground">Wallet data coming soon...</p>
-                </CardContent>
-              </Card>
+              <>
+                {timePeriod !== "all" ? (
+                  <Card className="border border-border bg-background">
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">Data for this time period not available yet.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {(walletTxLoading || walletSwapLoading) && (
+                      <p className="text-muted-foreground text-sm">Loading wallet stats...</p>
+                    )}
+                    {(walletTxError || walletSwapError) && (
+                      <p className="text-red-500 text-sm">
+                        Error: {walletTxError || walletSwapError}
+                      </p>
+                    )}
+                    {walletTxData && walletSwapData && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <StatCard
+                          label="Swap Volume"
+                          value={`$${walletSwapData.total_volume_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          showChange={false}
+                        />
+                        <StatCard
+                          label="Swap Count"
+                          value={walletSwapData.total_count.toLocaleString()}
+                          showChange={false}
+                        />
+                        <StatCard
+                          label="Transaction Volume"
+                          value={`$${walletTxData.total_volume_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          showChange={false}
+                        />
+                        <StatCard
+                          label="Transaction Count"
+                          value={walletTxData.total_count.toLocaleString()}
+                          showChange={false}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
           </div>
         </div>
