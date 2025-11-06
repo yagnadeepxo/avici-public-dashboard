@@ -3,6 +3,10 @@ const cors = require("cors");
 const cron = require("node-cron");
 const { runHourlyJob } = require("./cron/hourly");
 const { runDailyJob } = require("./cron/daily");
+
+require("./cron/daily_swaps");
+require("./cron/daily_transaction");
+
 const { supabase } = require("./db");
 require("dotenv").config();
 const walletTransactionRoute = require("./routes/wallet_transaction_route/wallet_transaction");
