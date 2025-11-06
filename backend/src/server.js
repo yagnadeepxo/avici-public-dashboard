@@ -4,8 +4,8 @@ const cron = require("node-cron");
 const { runHourlyJob } = require("./cron/hourly");
 const { runDailyJob } = require("./cron/daily");
 
-require("./cron/daily_swaps");
-require("./cron/daily_transaction");
+require("./cron/wallet_swap_daily");
+require("./cron/wallet_transaction_daily");
 
 const { supabase } = require("./db");
 require("dotenv").config();
