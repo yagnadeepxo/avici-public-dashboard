@@ -13,6 +13,13 @@ import { TransactionHistogram } from "@/components/countHistogram"
 import { SpendVolume7d } from "@/components/spendHistogram7d"
 import { CountHistogram7d } from "@/components/countHistogram7d"
 import { ArrowUp, ArrowDown } from "lucide-react"
+import { SpendHistogramAll } from "@/components/spendHistogramAll"
+import { ActiveUserAll } from "@/components/activeUsersHistogramAll"
+import { CumulativeSpendGraph } from "@/components/cumulativeSpendHistogramAll"
+import { WalletTransactionsHistogramAll } from "@/components/walletTransactionsHistogramAll"
+import { CumulativeTransactionVolume } from "@/components/cumulativeWalletTransactionAll"
+import { WalletSwapHistogramAll } from "@/components/walletSwapHistogramAll"
+import { CumulativeSwapVolume } from "@/components/cumulativeWalletSwapAll"
 
 type TimePeriod = "all" | "24h" | "7d" | "30d"
 type Category = "card spends" | "Virtual account" | "wallet"
@@ -62,21 +69,30 @@ function StatCard({ label, value, change, showChange }: StatCardProps) {
 export default function Dashboard() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all")
   const [category, setCategory] = useState<Category>("card spends")
-  
+
   // Card spends data
   const { data, loading, error } = useStats(timePeriod)
   const { changes } = usePercentChange()
-  
+
   // Virtual account data
-  const { 
-    data: vaData, 
-    loading: vaLoading, 
-    error: vaError 
+  const {
+    data: vaData,
+    loading: vaLoading,
+    error: vaError,
   } = useVirtualAccountStats(timePeriod)
 
   // Wallet data
-  const { data: walletTxData, loading: walletTxLoading, error: walletTxError } = useWalletTransactionStats()
-  const { data: walletSwapData, loading: walletSwapLoading, error: walletSwapError } = useWalletSwapStats()
+  const {
+    data: walletTxData,
+    loading: walletTxLoading,
+    error: walletTxError,
+  } = useWalletTransactionStats()
+
+  const {
+    data: walletSwapData,
+    loading: walletSwapLoading,
+    error: walletSwapError,
+  } = useWalletSwapStats()
 
   const shouldShowChanges = timePeriod === "all" || timePeriod === "24h"
 
@@ -84,7 +100,9 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">Avici Public Dashboard</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Avici Public Dashboard
+          </h1>
         </div>
 
         {/* Category Tabs */}
@@ -96,9 +114,10 @@ export default function Dashboard() {
               className={`
                 px-4 py-2.5 font-medium text-sm capitalize rounded-t-lg
                 transition-all duration-200
-                ${category === cat 
-                  ? "bg-card border border-border border-b-0 text-foreground translate-y-[1px]" 
-                  : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                ${
+                  category === cat
+                    ? "bg-card border border-border border-b-0 text-foreground translate-y-[1px]"
+                    : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }
               `}
             >
@@ -127,9 +146,11 @@ export default function Dashboard() {
             {/* Card Spends Category */}
             {category === "card spends" && (
               <>
-                {loading && <p className="text-muted-foreground text-sm">Loading stats...</p>}
+                {loading && (
+                  <p className="text-muted-foreground text-sm">Loading stats...</p>
+                )}
                 {error && <p className="text-red-500 text-sm">Error: {error}</p>}
-                
+
                 {data && (
                   <>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -139,28 +160,24 @@ export default function Dashboard() {
                         change={changes?.totalSpends}
                         showChange={shouldShowChanges}
                       />
-
                       <StatCard
                         label="Total Transactions"
                         value={data.totalTransactions.toLocaleString()}
                         change={changes?.totalTransactions}
                         showChange={shouldShowChanges}
                       />
-
                       <StatCard
                         label="Average Spend"
                         value={`$${(data.averageSpend / 100).toFixed(2)}`}
                         change={changes?.averageSpend}
                         showChange={shouldShowChanges}
                       />
-
                       <StatCard
                         label="Active Cards"
                         value={data.activeCards}
                         change={changes?.activeCards}
                         showChange={shouldShowChanges}
                       />
-
                       <StatCard
                         label="Unique Users"
                         value={data.uniqueUsers}
@@ -168,7 +185,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                       />
                     </div>
-                    
+
                     {timePeriod === "24h" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <SpendHistogram />
@@ -178,8 +195,18 @@ export default function Dashboard() {
 
                     {timePeriod === "7d" && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <SpendVolume7d/>
-                        <CountHistogram7d/>
+                        <SpendVolume7d />
+                        <CountHistogram7d />
+                      </div>
+                    )}
+
+                    {timePeriod === "all" && (
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                          <SpendHistogramAll />
+                          <CumulativeSpendGraph />
+                        </div>
+                        <ActiveUserAll />
                       </div>
                     )}
                   </>
@@ -190,32 +217,35 @@ export default function Dashboard() {
             {/* Virtual Account Category */}
             {category === "Virtual account" && (
               <>
-                {vaLoading && <p className="text-muted-foreground text-sm">Loading virtual account stats...</p>}
-                {vaError && <p className="text-red-500 text-sm">Error: {vaError}</p>}
-                
+                {vaLoading && (
+                  <p className="text-muted-foreground text-sm">
+                    Loading virtual account stats...
+                  </p>
+                )}
+                {vaError && (
+                  <p className="text-red-500 text-sm">Error: {vaError}</p>
+                )}
+
                 {vaData && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <StatCard
                       label="Total Volume"
-                      value={`$${vaData.totalVolume.toLocaleString(undefined, { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
+                      value={`$${vaData.totalVolume.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
                       })}`}
                       showChange={false}
                     />
-
                     <StatCard
                       label="Total Transactions"
                       value={vaData.count.toLocaleString()}
                       showChange={false}
                     />
-
                     <StatCard
                       label="Unique Virtual Accounts"
                       value={vaData.uniqueVirtualAccounts}
                       showChange={false}
                     />
-
                     <StatCard
                       label="Unique Customers"
                       value={vaData.uniqueCustomers}
@@ -232,13 +262,17 @@ export default function Dashboard() {
                 {timePeriod !== "all" ? (
                   <Card className="border border-border bg-background">
                     <CardContent className="p-8 text-center">
-                      <p className="text-muted-foreground">Data for this time period not available yet.</p>
+                      <p className="text-muted-foreground">
+                        Data for this time period not available yet.
+                      </p>
                     </CardContent>
                   </Card>
                 ) : (
                   <>
                     {(walletTxLoading || walletSwapLoading) && (
-                      <p className="text-muted-foreground text-sm">Loading wallet stats...</p>
+                      <p className="text-muted-foreground text-sm">
+                        Loading wallet stats...
+                      </p>
                     )}
                     {(walletTxError || walletSwapError) && (
                       <p className="text-red-500 text-sm">
@@ -246,28 +280,45 @@ export default function Dashboard() {
                       </p>
                     )}
                     {walletTxData && walletSwapData && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <StatCard
-                          label="Swap Volume"
-                          value={`$${walletSwapData.total_volume_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          showChange={false}
-                        />
-                        <StatCard
-                          label="Swap Count"
-                          value={walletSwapData.total_count.toLocaleString()}
-                          showChange={false}
-                        />
-                        <StatCard
-                          label="Transaction Volume"
-                          value={`$${walletTxData.total_volume_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          showChange={false}
-                        />
-                        <StatCard
-                          label="Transaction Count"
-                          value={walletTxData.total_count.toLocaleString()}
-                          showChange={false}
-                        />
-                      </div>
+                      <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <StatCard
+                            label="Swap Volume"
+                            value={`$${walletSwapData.total_volume_usd.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`}
+                            showChange={false}
+                          />
+                          <StatCard
+                            label="Swap Count"
+                            value={walletSwapData.total_count.toLocaleString()}
+                            showChange={false}
+                          />
+                          <StatCard
+                            label="Transaction Volume"
+                            value={`$${walletTxData.total_volume_usd.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`}
+                            showChange={false}
+                          />
+                          <StatCard
+                            label="Transaction Count"
+                            value={walletTxData.total_count.toLocaleString()}
+                            showChange={false}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                          <WalletTransactionsHistogramAll />
+                          <CumulativeTransactionVolume />
+
+                          <WalletSwapHistogramAll />
+                          <CumulativeSwapVolume />
+                        </div>
+                      </>
                     )}
                   </>
                 )}
