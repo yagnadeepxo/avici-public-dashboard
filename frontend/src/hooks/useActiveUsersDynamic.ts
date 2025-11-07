@@ -1,3 +1,4 @@
+// useActiveUsersDynamic.ts
 import { useQuery } from "@tanstack/react-query"
 
 interface GraphPoint {
@@ -14,19 +15,18 @@ interface UserStatsResponse {
   graphData: GraphPoint[]
 }
 
-export const useActiveUserAll = (
-  timeFrame = "24h",
-  timeStart = "2025-01-01T00:00:00Z",
-  timeEnd?: string
+export const useActiveUserDynamic = (
+  timeFrame: string = "24h",
+  daysBack: number = 30
 ) => {
-  // Compute timeEnd inside queryFn to ensure it's fresh, but use stable key
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
-    queryKey: ["activeUsersAll", timeFrame, timeStart, timeEnd || "default"],
+    queryKey: ["activeUsersDynamic", timeFrame, daysBack],
     queryFn: async () => {
-      // Use provided timeEnd or current date
-      const endDate = timeEnd || new Date().toISOString()
+      const timeEnd = new Date().toISOString()
+      const timeStart = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
+      
       const res = await fetch(
-        `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
+        `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch active user stats")

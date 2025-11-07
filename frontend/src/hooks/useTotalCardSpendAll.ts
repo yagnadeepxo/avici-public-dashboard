@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 
 interface GraphPoint {
   timestamp: string
@@ -19,31 +19,29 @@ export const useTotalCardSpendAll = (
   timeStart = "2025-01-01T00:00:00Z",
   timeEnd?: string
 ) => {
-  const [data, setData] = useState<UserStatsResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Use today's date if timeEnd is not provided
-        const endDate = timeEnd || new Date().toISOString()
-        
-        const res = await fetch(
-          `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
-        )
-        if (!res.ok) throw new Error("Failed to fetch user stats")
-        const json = await res.json()
-        setData(json)
-      } catch (err: any) {
-        setError(err.message || "Unknown error")
-      } finally {
-        setLoading(false)
+  const { data, isLoading, error } = useQuery<UserStatsResponse>({
+    queryKey: ["totalCardSpendAll", timeFrame, timeStart, timeEnd || "default"],
+    queryFn: async () => {
+      // Use provided timeEnd or current date
+      const endDate = timeEnd || new Date().toISOString()
+      const res = await fetch(
+        `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
+      )
+      if (!res.ok) {
+        throw new Error("Failed to fetch user stats")
       }
-    }
+      return res.json()
+    },
+    staleTime: 3600000, // 1 hour cache - data is fresh for 1 hour
+    gcTime: 7200000, // 2 hours - keep in cache for 2 hours
+    refetchOnMount: false, // Don't refetch if data is fresh
+    refetchOnWindowFocus: false, // Don't refetch on window focus
+    retry: 1,
+  })
 
-    fetchStats()
-  }, [timeFrame, timeStart, timeEnd])
-
-  return { data, loading, error }
+  return {
+    data: data || null,
+    loading: isLoading && !data, // Only show loading if we don't have cached data
+    error: error ? (error as Error).message : null,
+  }
 }

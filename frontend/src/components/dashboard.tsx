@@ -20,6 +20,9 @@ import { WalletTransactionsHistogramAll } from "@/components/walletTransactionsH
 import { CumulativeTransactionVolume } from "@/components/cumulativeWalletTransactionAll"
 import { WalletSwapHistogramAll } from "@/components/walletSwapHistogramAll"
 import { CumulativeSwapVolume } from "@/components/cumulativeWalletSwapAll"
+import { ActiveUserDynamic } from "@/components/activeUsersHistogramDynamic"
+import { SpendHistogramDynamic } from "./spendHistogramDynamic"
+import { CumulativeSpendDynamic } from "./cumulativeSpendHistogramDynamic"
 
 type TimePeriod = "all" | "24h" | "7d" | "30d"
 type Category = "card spends" | "Virtual account" | "wallet"
@@ -153,7 +156,7 @@ export default function Dashboard() {
 
                 {data && (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-5 sm:grid-cols-1 gap-3">
                       <StatCard
                         label="Total Spends"
                         value={`$${(data.totalSpends / 100).toLocaleString()}`}
@@ -187,16 +190,29 @@ export default function Dashboard() {
                     </div>
 
                     {timePeriod === "24h" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                         <SpendHistogram />
                         <TransactionHistogram />
                       </div>
                     )}
 
                     {timePeriod === "7d" && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <SpendVolume7d />
-                        <CountHistogram7d />
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <SpendHistogramDynamic daysBack={7} />
+                        <CumulativeSpendDynamic daysBack={7} />
+                        </div>
+                        <ActiveUserDynamic daysBack={7} />
+                      </div>
+                    )}
+
+                    {timePeriod === "30d" && (
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <SpendHistogramDynamic daysBack={30} />
+                        <CumulativeSpendDynamic daysBack={30} />
+                        </div>
+                        <ActiveUserDynamic daysBack={30} />
                       </div>
                     )}
 
@@ -209,6 +225,8 @@ export default function Dashboard() {
                         <ActiveUserAll />
                       </div>
                     )}
+
+
                   </>
                 )}
               </>
@@ -314,7 +332,6 @@ export default function Dashboard() {
 
                           <WalletTransactionsHistogramAll />
                           <CumulativeTransactionVolume />
-
                           <WalletSwapHistogramAll />
                           <CumulativeSwapVolume />
                         </div>

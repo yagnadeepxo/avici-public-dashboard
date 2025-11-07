@@ -1,0 +1,104 @@
+// ActiveUserDynamic.tsx
+"use client"
+
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts"
+import { useActiveUserDynamic } from "@/hooks/useActiveUsersDynamic"
+import { Card, CardContent } from "@/components/ui/card"
+
+interface ActiveUserDynamicProps {
+  timeFrame?: string
+  daysBack: number
+}
+
+export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDynamicProps) {
+  const { data, loading, error } = useActiveUserDynamic(timeFrame, daysBack)
+
+  if (loading) {
+    return (
+      <Card className="border border-border bg-background">
+        <CardContent className="p-6 text-center text-sm text-muted-foreground">
+          Loading active user data...
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="border border-border bg-background">
+        <CardContent className="p-6 text-center text-sm text-red-500">
+          Error: {error}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const graphData =
+    data?.graphData?.map((item) => ({
+      date: new Date(item.timestamp).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      activeUsers: item.activeUsers,
+    })) || []
+
+  return (
+    <Card className="border border-border bg-background">
+      <CardContent className="p-4">
+        <p className="text-sm text-muted-foreground mb-2">
+          Daily Active Users (Last {daysBack} Days)
+        </p>
+        <div className="w-full h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={graphData}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(0,0,0,0.05)"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "#888", fontSize: 12 }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "#888", fontSize: 12 }}
+              />
+              <Tooltip
+                cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                formatter={(val: number) => [val, "Active Users"]}
+              />
+              {/* Light grey bars for each day's active users */}
+              <Bar
+                dataKey="activeUsers"
+                barSize={20}
+                fill="rgba(0, 0, 0, 0.08)"
+                radius={[4, 4, 0, 0]}
+              />
+              {/* Black trendline connecting peaks */}
+              <Line
+                type="monotone"
+                dataKey="activeUsers"
+                stroke="#000"
+                strokeWidth={1.8}
+                dot={false}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
