@@ -22,9 +22,25 @@ export const useActiveUserDynamic = (
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["activeUsersDynamic", timeFrame, daysBack],
     queryFn: async () => {
-      const timeEnd = new Date().toISOString()
-      const timeStart = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
-      
+      let timeStart: string
+      let timeEnd: string
+
+      if (timeFrame === "1h") {
+        // For hourly charts, always use today's UTC midnight to tomorrow's UTC midnight
+        const now = new Date()
+        const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+        const end = new Date(start)
+        end.setUTCDate(end.getUTCDate() + 1)
+        timeStart = start.toISOString()
+        timeEnd = end.toISOString()
+      } else {
+        // Fallback for non-hourly cases: rolling window based on daysBack
+        const end = new Date()
+        const start = new Date(end.getTime() - daysBack * 24 * 60 * 60 * 1000)
+        timeStart = start.toISOString()
+        timeEnd = end.toISOString()
+      }
+
       const res = await fetch(
         `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
       )

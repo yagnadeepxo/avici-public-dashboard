@@ -23,6 +23,8 @@ import { CumulativeSwapVolume } from "@/components/cumulativeWalletSwapAll"
 import { ActiveUserDynamic } from "@/components/activeUsersHistogramDynamic"
 import { SpendHistogramDynamic } from "./spendHistogramDynamic"
 import { CumulativeSpendDynamic } from "./cumulativeSpendHistogramDynamic"
+import { CumulativeSpendHour } from "./cumulativeSpendHistogramHour"
+import { ActiveUsersHour } from "./activeUsersHistogramHour"
 
 type TimePeriod = "all" | "24h" | "7d" | "30d"
 type Category = "card spends" | "Virtual account" | "wallet"
@@ -190,9 +192,12 @@ export default function Dashboard() {
                     </div>
 
                     {timePeriod === "24h" && (
-                      <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
                         <SpendHistogram />
-                        <TransactionHistogram />
+                        <CumulativeSpendHour />
+                        </div>
+                        <ActiveUsersHour />
                       </div>
                     )}
 
