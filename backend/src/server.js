@@ -3,6 +3,7 @@ const cors = require("cors");
 const cron = require("node-cron");
 const { runHourlyJob } = require("./cron/hourly");
 const { runDailyJob } = require("./cron/daily");
+const { cleanupPreviousDay } = require("./cron/cleanup_previous_day");
 
 require("./cron/wallet_swap_daily");
 require("./cron/wallet_transaction_daily");
@@ -61,6 +62,7 @@ app.use("/api/wallet", walletSwapRoute);
 // ⏰ Cron Jobs
 cron.schedule("0 * * * *", runHourlyJob); // every hour
 cron.schedule("0 0 * * *", runDailyJob);  // every day at midnight
+cron.schedule("0 1 * * *", cleanupPreviousDay); // every day at 1 AM UTC to clean previous day's hourly data
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
