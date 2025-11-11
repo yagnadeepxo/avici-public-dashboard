@@ -74,11 +74,14 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "#888", fontSize: 12 }}
-                tickFormatter={(val) => `$${val}`}
+                tickFormatter={(val) => `$${Number(val).toLocaleString()}`}
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                formatter={(val: number) => [`$${val.toFixed(2)}`, "Daily Spend"]}
+                formatter={(val: number) => [
+                  `$${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  "Daily Spend",
+                ]}
               />
               {/* Dark grey bars for daily spend */}
               <Bar

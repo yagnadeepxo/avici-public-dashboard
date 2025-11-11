@@ -22,6 +22,28 @@ interface ActiveUserDynamicProps {
 export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDynamicProps) {
   const { data, loading, error } = useActiveUserDynamic(timeFrame, daysBack)
 
+  // Custom tooltip: show a single "Active Users" row, all-black text
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload || payload.length === 0) return null
+    // Prefer the first payload value
+    const value = payload[0]?.value ?? 0
+    return (
+      <div
+        style={{
+          backgroundColor: "white",
+          border: "1px solid #e5e7eb",
+          borderRadius: 6,
+          padding: "6px 8px",
+          color: "#000",
+          fontSize: 12,
+        }}
+      >
+        <div style={{ color: "#000", marginBottom: 2 }}>{label}:00 UTC</div>
+        <div style={{ color: "#000" }}>Active Users: {value}</div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <Card className="border border-border bg-background">
@@ -78,7 +100,10 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                formatter={(val: number) => [val, "Active Users"]}
+                content={<CustomTooltip />}
+                wrapperStyle={{ color: "#000" }}
+                labelStyle={{ color: "#000" }}
+                itemStyle={{ color: "#000" }}
               />
               {/* Light grey bars for each day's active users */}
               <Bar

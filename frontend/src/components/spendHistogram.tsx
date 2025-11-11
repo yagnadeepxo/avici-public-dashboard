@@ -61,13 +61,12 @@ export function SpendHistogram() {
               formatter={(value: number) => [`$${value.toLocaleString()}`, 'Spend']}
               labelFormatter={(label) => `${label}:00 UTC`}
               contentStyle={{ 
-                backgroundColor: 'grey', 
-                border: '1px solid #374151',
+                backgroundColor: 'white',
                 borderRadius: '6px',
                 fontSize: '12px'
               }}
             />
-            <Bar dataKey="spend" fill="black" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="spend" fill="rgba(0, 0, 0, 0.4)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

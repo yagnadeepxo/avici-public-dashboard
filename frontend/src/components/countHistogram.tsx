@@ -80,7 +80,7 @@ export function TransactionHistogram() {
         padding: '6px 8px',
       }}
     />
-    <Bar dataKey="count" fill="black" radius={[3, 3, 0, 0]} />
+    <Bar dataKey="count" fill="rgba(0, 0, 0, 0.08)" radius={[3, 3, 0, 0]} />
   </BarChart>
 </ResponsiveContainer>
       </CardContent>

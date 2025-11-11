@@ -76,7 +76,7 @@ export function CumulativeSpendHour() {
 								formatter={(value: number) => [`$${value.toLocaleString()}`, "Cumulative Spend"]}
 								labelFormatter={(label) => `${label}:00 UTC`}
 								contentStyle={{
-									backgroundColor: "grey",
+									backgroundColor: "white",
 									border: "1px solid #374151",
 									borderRadius: "6px",
 									fontSize: "12px",

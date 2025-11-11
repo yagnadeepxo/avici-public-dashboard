@@ -15,6 +15,32 @@ import { useActiveUserDynamic } from "@/hooks/useActiveUsersDynamic"
 export function ActiveUsersHour() {
 	const { data, loading, error } = useActiveUserDynamic("1h", 1)
 
+	// Custom tooltip: single "Active Users" row, all-black text, note in-progress hour
+	const CustomTooltip = ({ active, payload, label }: any) => {
+		if (!active || !payload || payload.length === 0) return null
+		const first = payload[0]
+		const value = first?.value ?? 0
+		const isIncomplete = first?.payload?.isIncomplete && value === 0
+		return (
+			<div
+				style={{
+					backgroundColor: "white",
+					border: "1px solid #e5e7eb",
+					borderRadius: 6,
+					padding: "6px 8px",
+					color: "#000",
+					fontSize: 12,
+				}}
+			>
+				<div style={{ color: "#000", marginBottom: 2 }}>{label}:00 UTC</div>
+				<div style={{ color: "#000" }}>
+					Active Users: {value}
+					{isIncomplete ? " (in progress)" : ""}
+				</div>
+			</div>
+		)
+	}
+
 	if (loading) {
 		return (
 			<Card className="border border-border bg-card">
@@ -81,20 +107,13 @@ export function ActiveUsersHour() {
 								width={45}
 							/>
 							<Tooltip
-								formatter={(value: number, _name: any, props: any) => {
-									const payload = props?.payload as { isIncomplete?: boolean } | undefined
-									const suffix = payload?.isIncomplete && value === 0 ? " (in progress)" : ""
-									return [value, `Active Users${suffix}`]
-								}}
-								labelFormatter={(label) => `${label}:00 UTC`}
-								contentStyle={{
-									backgroundColor: "grey",
-									border: "1px solid #374151",
-									borderRadius: "6px",
-									fontSize: "12px",
-								}}
+								cursor={{ fill: "rgba(0,0,0,0.05)" }}
+								content={<CustomTooltip />}
+								wrapperStyle={{ color: "#000" }}
+								labelStyle={{ color: "#000" }}
+								itemStyle={{ color: "#000" }}
 							/>
-							<Bar dataKey="activeUsers" barSize={18} fill="black" radius={[4, 4, 0, 0]} />
+							<Bar dataKey="activeUsers" barSize={18} fill="rgba(0, 0, 0, 0.08)" radius={[4, 4, 0, 0]} />
 						</ComposedChart>
 					</ResponsiveContainer>
 				</div>
