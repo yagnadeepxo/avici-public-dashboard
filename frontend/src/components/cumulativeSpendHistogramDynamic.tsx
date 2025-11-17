@@ -12,6 +12,7 @@ import {
 } from "recharts"
 import { useSpendVolumeDynamic } from "@/hooks/useSpendVolumeDynamic"
 import { Card, CardContent } from "@/components/ui/card"
+import { formatCurrency } from "@/lib/utils"
 
 interface CumulativeSpendDynamicProps {
   timeFrame?: string
@@ -79,7 +80,7 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "#888", fontSize: 12 }}
-                tickFormatter={(val) => `$${Number(val).toLocaleString()}`}
+                tickFormatter={(val) => formatCurrency(Number(val))}
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}

@@ -11,6 +11,7 @@ import {
 	Tooltip,
 } from "recharts"
 import { useHistogramData } from "@/hooks/useHistogramData"
+import { formatCurrency } from "@/lib/utils"
 
 export function CumulativeSpendHour() {
 	const { data, loading, error } = useHistogramData()
@@ -69,8 +70,8 @@ export function CumulativeSpendHour() {
 								tick={{ fontSize: 10 }}
 								tickLine={{ stroke: "#6b7280" }}
 								axisLine={{ stroke: "#6b7280" }}
-								tickFormatter={(value) => (value >= 1000 ? `${(value / 1000).toFixed(0)}k` : `${value}`)}
-								width={50}
+								tickFormatter={(value) => formatCurrency(Number(value))}
+								width={70}
 							/>
 							<Tooltip
 								formatter={(value: number) => [`$${value.toLocaleString()}`, "Cumulative Spend"]}

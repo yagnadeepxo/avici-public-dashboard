@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { useHistogramData } from '@/hooks/useHistogramData'
+import { formatCurrency } from "@/lib/utils"
 
 export function SpendHistogram() {
   const { data, loading, error } = useHistogramData()
@@ -54,8 +55,8 @@ export function SpendHistogram() {
               tick={{ fontSize: 10 }}
               tickLine={{ stroke: '#6b7280' }}
               axisLine={{ stroke: '#6b7280' }}
-              tickFormatter={(value) => value >= 1000 ? `${(value / 1000).toFixed(0)}k` : `${value}`}
-              width={45}
+              tickFormatter={(value) => formatCurrency(Number(value))}
+              width={65}
             />
             <Tooltip 
               formatter={(value: number) => [`$${value.toLocaleString()}`, 'Spend']}

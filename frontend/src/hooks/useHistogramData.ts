@@ -6,6 +6,37 @@ interface HistogramDataPoint {
 }
 
 export function useHistogramData() {
+  const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+  const getCache = <T,>(key: string): T | null => {
+    if (typeof window === 'undefined') return null
+    try {
+      const raw = window.localStorage.getItem(key)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as { data: T; fetchedAt: number }
+      if (!parsed?.data || !parsed?.fetchedAt) return null
+      if (Date.now() - parsed.fetchedAt > CACHE_TTL_MS) return null
+      return parsed.data
+    } catch {
+      return null
+    }
+  }
+
+  const setCache = (key: string, data: unknown) => {
+    if (typeof window === 'undefined') return
+    try {
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          fetchedAt: Date.now(),
+        })
+      )
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   const { data, isLoading, error } = useQuery<HistogramDataPoint[]>({
     queryKey: ['histogramData'],
     queryFn: async () => {
@@ -17,6 +48,12 @@ export function useHistogramData() {
 
       const timeStart = start.toISOString()
       const timeEnd = end.toISOString()
+
+      const cacheKey = `histogramData:${timeStart}:${timeEnd}`
+      const cached = getCache<HistogramDataPoint[]>(cacheKey)
+      if (cached) {
+        return cached
+      }
 
       const response = await fetch(
         `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=1h&timeStart=${encodeURIComponent(
@@ -46,6 +83,7 @@ export function useHistogramData() {
         }
       })
 
+      setCache(cacheKey, hourly)
       return hourly
     },
     staleTime: 1800000, // 30 minutes cache - data is fresh for 30 minutes

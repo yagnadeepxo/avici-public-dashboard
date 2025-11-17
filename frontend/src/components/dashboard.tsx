@@ -53,7 +53,7 @@ function StatCard({ label, value, change, showChange }: StatCardProps) {
                 isPositive
                   ? "text-green-600"
                   : isNegative
-                  ? "text-red-600"
+                  ? "text-gray-600"
                   : "text-muted-foreground"
               }`}
             >
@@ -99,7 +99,11 @@ export default function Dashboard() {
     error: walletSwapError,
   } = useWalletSwapStats()
 
-  const shouldShowChanges = timePeriod === "all" || timePeriod === "24h"
+  const shouldShowChanges =
+    timePeriod === "all" ||
+    timePeriod === "24h" ||
+    timePeriod === "7d" ||
+    timePeriod === "30d"
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-6">
@@ -158,7 +162,7 @@ export default function Dashboard() {
 
                 {data && (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-5 sm:grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <StatCard
                         label="Total Spends"
                         value={`$${(data.totalSpends / 100).toLocaleString()}`}
@@ -169,6 +173,12 @@ export default function Dashboard() {
                         label="Total Transactions"
                         value={data.totalTransactions.toLocaleString()}
                         change={changes?.totalTransactions}
+                        showChange={shouldShowChanges}
+                      />
+                      <StatCard
+                        label="Total Credit Created"
+                        value={`$${(data.totalCreditCreated / 100).toLocaleString()}`}
+                        change={changes?.totalCreditCreated}
                         showChange={shouldShowChanges}
                       />
                       <StatCard

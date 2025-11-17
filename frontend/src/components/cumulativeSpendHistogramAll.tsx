@@ -11,6 +11,7 @@ import {
 } from "recharts"
 import { useTotalCardSpendAll } from "@/hooks/useTotalCardSpendAll"
 import { Card, CardContent } from "@/components/ui/card"
+import { formatCurrency } from "@/lib/utils"
 
 export function CumulativeSpendGraph() {
   const { data, loading, error } = useTotalCardSpendAll()
@@ -73,7 +74,7 @@ export function CumulativeSpendGraph() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "#888", fontSize: 12 }}
-                tickFormatter={(val) => `$${val}`}
+                tickFormatter={(val) => formatCurrency(Number(val))}
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}

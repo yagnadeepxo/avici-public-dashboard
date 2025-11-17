@@ -19,6 +19,37 @@ export const useActiveUserDynamic = (
   timeFrame: string = "24h",
   daysBack: number = 30
 ) => {
+  const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+  const getCache = <T,>(key: string): T | null => {
+    if (typeof window === "undefined") return null
+    try {
+      const raw = window.localStorage.getItem(key)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as { data: T; fetchedAt: number }
+      if (!parsed?.data || !parsed?.fetchedAt) return null
+      if (Date.now() - parsed.fetchedAt > CACHE_TTL_MS) return null
+      return parsed.data
+    } catch {
+      return null
+    }
+  }
+
+  const setCache = (key: string, data: unknown) => {
+    if (typeof window === "undefined") return
+    try {
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          fetchedAt: Date.now(),
+        })
+      )
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["activeUsersDynamic", timeFrame, daysBack],
     queryFn: async () => {
@@ -41,13 +72,21 @@ export const useActiveUserDynamic = (
         timeEnd = end.toISOString()
       }
 
+      const cacheKey = `activeUsersDynamic:${timeFrame}:${timeStart}:${timeEnd}:${daysBack}`
+      const cached = getCache<UserStatsResponse>(cacheKey)
+      if (cached) {
+        return cached
+      }
+
       const res = await fetch(
         `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch active user stats")
       }
-      return res.json()
+      const json = await res.json()
+      setCache(cacheKey, json)
+      return json
     },
     staleTime: 3600000, // 1 hour cache - data is fresh for 1 hour
     gcTime: 7200000, // 2 hours - keep in cache for 2 hours
