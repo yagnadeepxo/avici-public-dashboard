@@ -91,7 +91,7 @@ export default function Dashboard() {
     all: dailyChanges,
   }
 
-  const activeChanges = changesByPeriod[timePeriod] ?? dailyChanges
+  const activeChanges = changesByPeriod[timePeriod]
 
   // Virtual account data
   const {
