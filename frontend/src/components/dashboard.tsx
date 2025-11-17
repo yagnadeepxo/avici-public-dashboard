@@ -27,7 +27,7 @@ import { CumulativeSpendHour } from "./cumulativeSpendHistogramHour"
 import { ActiveUsersHour } from "./activeUsersHistogramHour"
 
 type TimePeriod = "all" | "24h" | "7d" | "30d"
-type Category = "card spends" | "Virtual account" | "wallet"
+type Category = "card spends" 
 
 interface StatCardProps {
   label: string
@@ -112,7 +112,7 @@ export default function Dashboard() {
 
         {/* Category Tabs */}
         <div className="flex gap-1 mb-0">
-          {(["card spends", "Virtual account", "wallet"] as const).map((cat) => (
+          {(["card spends"] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}
@@ -158,7 +158,7 @@ export default function Dashboard() {
 
                 {data && (
                   <>
-                    <div className="grid grid-cols-2 md:grid-cols-5 sm:grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-5 sm:grid-cols-1 gap-3">
                       <StatCard
                         label="Total Spends"
                         value={`$${(data.totalSpends / 100).toLocaleString()}`}
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
                     {timePeriod === "24h" && (
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                         <SpendHistogram />
                         <CumulativeSpendHour />
                         </div>
@@ -203,7 +203,7 @@ export default function Dashboard() {
 
                     {timePeriod === "7d" && (
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                         <SpendHistogramDynamic daysBack={7} />
                         <CumulativeSpendDynamic daysBack={7} />
                         </div>
@@ -213,7 +213,7 @@ export default function Dashboard() {
 
                     {timePeriod === "30d" && (
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                         <SpendHistogramDynamic daysBack={30} />
                         <CumulativeSpendDynamic daysBack={30} />
                         </div>
@@ -223,7 +223,7 @@ export default function Dashboard() {
 
                     {timePeriod === "all" && (
                       <div className="grid grid-cols-1 gap-3">
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                           <SpendHistogramAll />
                           <CumulativeSpendGraph />
                         </div>
@@ -236,8 +236,9 @@ export default function Dashboard() {
                 )}
               </>
             )}
-
+            
             {/* Virtual Account Category */}
+            {/*
             {category === "Virtual account" && (
               <>
                 {vaLoading && (
@@ -278,8 +279,10 @@ export default function Dashboard() {
                 )}
               </>
             )}
+            */}
 
             {/* Wallet Category */}
+            {/*
             {category === "wallet" && (
               <>
                 {timePeriod !== "all" ? (
@@ -346,6 +349,8 @@ export default function Dashboard() {
                 )}
               </>
             )}
+            */}
+            
           </div>
         </div>
       </div>
