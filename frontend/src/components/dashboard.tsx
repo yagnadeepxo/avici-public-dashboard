@@ -77,7 +77,21 @@ export default function Dashboard() {
 
   // Card spends data
   const { data, loading, error } = useStats(timePeriod)
-  const { changes } = usePercentChange()
+  const { changes: dailyChanges } = usePercentChange(1)
+  const { changes: weeklyChanges } = usePercentChange(7)
+  const { changes: monthlyChanges } = usePercentChange(30)
+
+  const changesByPeriod: Record<
+    TimePeriod,
+    ReturnType<typeof usePercentChange>["changes"]
+  > = {
+    "24h": dailyChanges,
+    "7d": weeklyChanges,
+    "30d": monthlyChanges,
+    all: dailyChanges,
+  }
+
+  const activeChanges = changesByPeriod[timePeriod] ?? dailyChanges
 
   // Virtual account data
   const {
@@ -166,37 +180,37 @@ export default function Dashboard() {
                       <StatCard
                         label="Total Spends"
                         value={`$${(data.totalSpends / 100).toLocaleString()}`}
-                        change={changes?.totalSpends}
+                        change={activeChanges?.totalSpends}
                         showChange={shouldShowChanges}
                       />
                       <StatCard
                         label="Total Transactions"
                         value={data.totalTransactions.toLocaleString()}
-                        change={changes?.totalTransactions}
+                        change={activeChanges?.totalTransactions}
                         showChange={shouldShowChanges}
                       />
                       <StatCard
                         label="Total Credit Created"
                         value={`$${(data.totalCreditCreated / 100).toLocaleString()}`}
-                        change={changes?.totalCreditCreated}
+                        change={activeChanges?.totalCreditCreated}
                         showChange={shouldShowChanges}
                       />
                       <StatCard
                         label="Average Spend"
                         value={`$${(data.averageSpend / 100).toFixed(2)}`}
-                        change={changes?.averageSpend}
+                        change={activeChanges?.averageSpend}
                         showChange={shouldShowChanges}
                       />
                       <StatCard
                         label="Active Cards"
                         value={data.activeCards}
-                        change={changes?.activeCards}
+                        change={activeChanges?.activeCards}
                         showChange={shouldShowChanges}
                       />
                       <StatCard
                         label="Unique Users"
                         value={data.uniqueUsers}
-                        change={changes?.uniqueUsers}
+                        change={activeChanges?.uniqueUsers}
                         showChange={shouldShowChanges}
                       />
                     </div>

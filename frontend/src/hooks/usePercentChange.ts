@@ -15,7 +15,7 @@ interface PercentChangeResponse {
   error: string | null
 }
 
-export function usePercentChange(): PercentChangeResponse {
+export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
   const [changes, setChanges] = useState<PercentageChanges | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -26,32 +26,38 @@ export function usePercentChange(): PercentChangeResponse {
         setLoading(true)
         setError(null)
 
-        // Get today's and yesterday's dates in YYYY-MM-DD format
+        // Get today's date and comparison date in YYYY-MM-DD format
         const today = new Date()
-        const yesterday = new Date(today)
-        yesterday.setDate(yesterday.getDate() - 1)
+        const comparisonDate = new Date(today)
+        comparisonDate.setDate(comparisonDate.getDate() - daysBack)
 
-        const todayStr = today.toISOString().split('T')[0]
-        const yesterdayStr = yesterday.toISOString().split('T')[0]
+        const todayStr = today.toISOString().split("T")[0]
+        const comparisonStr = comparisonDate.toISOString().split("T")[0]
 
         // Fetch both dates
-        const [todayResponse, yesterdayResponse] = await Promise.all([
-          fetch(`https://avici-public-dashboard-production.up.railway.app/api/stats?date=${todayStr}`),
-          fetch(`https://avici-public-dashboard-production.up.railway.app/api/stats?date=${yesterdayStr}`)
+        const [todayResponse, comparisonResponse] = await Promise.all([
+          fetch(
+            `https://avici-public-dashboard-production.up.railway.app/api/stats?date=${todayStr}`
+          ),
+          fetch(
+            `https://avici-public-dashboard-production.up.railway.app/api/stats?date=${comparisonStr}`
+          ),
         ])
 
-        if (!todayResponse.ok || !yesterdayResponse.ok) {
+        if (!todayResponse.ok || !comparisonResponse.ok) {
           throw new Error("Failed to fetch stats")
         }
 
         const todayData = await todayResponse.json()
-        const yesterdayData = await yesterdayResponse.json()
+        const comparisonData = await comparisonResponse.json()
 
         // Handle if data is in array format
         const todayStats = Array.isArray(todayData) ? todayData[0] : todayData
-        const yesterdayStats = Array.isArray(yesterdayData) ? yesterdayData[0] : yesterdayData
+        const comparisonStats = Array.isArray(comparisonData)
+          ? comparisonData[0]
+          : comparisonData
 
-        if (!todayStats || !yesterdayStats) {
+        if (!todayStats || !comparisonStats) {
           setChanges(null)
           return
         }
@@ -63,12 +69,30 @@ export function usePercentChange(): PercentChangeResponse {
         }
 
         const percentageChanges: PercentageChanges = {
-          totalSpends: calculateChange(todayStats.total_spends, yesterdayStats.total_spends),
-          totalTransactions: calculateChange(todayStats.total_transactions, yesterdayStats.total_transactions),
-          totalCreditCreated: calculateChange(todayStats.total_credit_created, yesterdayStats.total_credit_created),
-          averageSpend: calculateChange(todayStats.average_spend, yesterdayStats.average_spend),
-          activeCards: calculateChange(todayStats.active_cards, yesterdayStats.active_cards),
-          uniqueUsers: calculateChange(todayStats.unique_users, yesterdayStats.unique_users),
+          totalSpends: calculateChange(
+            todayStats.total_spends,
+            comparisonStats.total_spends
+          ),
+          totalTransactions: calculateChange(
+            todayStats.total_transactions,
+            comparisonStats.total_transactions
+          ),
+          totalCreditCreated: calculateChange(
+            todayStats.total_credit_created,
+            comparisonStats.total_credit_created
+          ),
+          averageSpend: calculateChange(
+            todayStats.average_spend,
+            comparisonStats.average_spend
+          ),
+          activeCards: calculateChange(
+            todayStats.active_cards,
+            comparisonStats.active_cards
+          ),
+          uniqueUsers: calculateChange(
+            todayStats.unique_users,
+            comparisonStats.unique_users
+          ),
         }
 
         setChanges(percentageChanges)
@@ -81,7 +105,7 @@ export function usePercentChange(): PercentChangeResponse {
     }
 
     fetchPercentChanges()
-  }, [])
+  }, [daysBack])
 
   return { changes, loading, error }
 }
