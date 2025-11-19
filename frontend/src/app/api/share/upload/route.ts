@@ -17,6 +17,9 @@ if (!bucketName) {
   throw new Error("Missing NEXT_PUBLIC_BUCKET_NAME or SUPABASE_BUCKET_NAME env variable")
 }
 
+// TypeScript type assertion - we know bucketName is string after the check above
+const BUCKET_NAME: string = bucketName
+
 export async function POST(request: Request) {
   try {
     const { imageDataUrl, label, timePeriod } = (await request.json()) as UploadPayload
@@ -39,7 +42,7 @@ export async function POST(request: Request) {
     const filePath = `${slug}.png`
 
     const { error: uploadError } = await supabaseServer.storage
-      .from(bucketName)
+      .from(BUCKET_NAME)
       .upload(filePath, buffer, {
         contentType: "image/png",
         upsert: false,
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
 
     const {
       data: { publicUrl },
-    } = supabaseServer.storage.from(bucketName).getPublicUrl(filePath)
+    } = supabaseServer.storage.from(BUCKET_NAME).getPublicUrl(filePath)
 
     const insertPayload = {
       slug,
