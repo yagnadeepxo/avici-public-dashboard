@@ -30,7 +30,7 @@ export default function ShareRedirectClient({ data }: ShareRedirectClientProps) 
       <img 
         src={data.image_url} 
         alt={data.label}
-        style={{ maxWidth: "100%", marginTop: "20px", borderRadius: "8px", maxWidth: "600px" }}
+        style={{ maxWidth: "600px", width: "100%", marginTop: "20px", borderRadius: "8px" }}
       />
     </div>
   )
