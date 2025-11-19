@@ -4,9 +4,9 @@ import { supabaseServer } from "@/lib/supabaseServer"
 import ShareRedirectClient from "./ShareRedirectClient"
 
 interface SharePageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 async function fetchShare(slug: string) {
@@ -22,7 +22,8 @@ export async function generateMetadata(
   { params }: SharePageProps,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const data = await fetchShare(params.slug)
+  const { slug } = await params
+  const data = await fetchShare(slug)
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://dashboard.avici.money").replace(/\/$/, "")
   const defaultTitle = "Avici Dashboard"
   const title = data ? `${data.label} · Avici Dashboard` : defaultTitle
@@ -30,7 +31,7 @@ export async function generateMetadata(
   const imageUrl = data?.image_url
 
   const metadataBase = new URL(siteUrl)
-  const shareUrl = `${siteUrl}/share/${params.slug}`
+  const shareUrl = `${siteUrl}/share/${slug}`
 
   const openGraph = {
     title,
@@ -69,7 +70,8 @@ export async function generateMetadata(
 }
 
 export default async function ShareRedirectPage({ params }: SharePageProps) {
-  const data = await fetchShare(params.slug)
+  const { slug } = await params
+  const data = await fetchShare(slug)
 
   if (!data) {
     redirect("/")

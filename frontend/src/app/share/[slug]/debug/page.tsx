@@ -1,16 +1,17 @@
 import { supabaseServer } from "@/lib/supabaseServer"
 
 interface DebugPageProps {
-  params: {
+  params: Promise<{
     slug: string
-  }
+  }>
 }
 
 export default async function ShareDebugPage({ params }: DebugPageProps) {
+  const { slug } = await params
   const { data } = await supabaseServer
     .from("card_shares")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .maybeSingle()
 
   if (!data) {
@@ -18,7 +19,7 @@ export default async function ShareDebugPage({ params }: DebugPageProps) {
   }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://dashboard.avici.money").replace(/\/$/, "")
-  const shareUrl = `${siteUrl}/share/${params.slug}`
+  const shareUrl = `${siteUrl}/share/${slug}`
 
   return (
     <div style={{ padding: "40px", maxWidth: "800px", margin: "0 auto", fontFamily: "system-ui" }}>
