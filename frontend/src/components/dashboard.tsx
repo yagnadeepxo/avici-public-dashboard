@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useStats } from "@/hooks/useDashboardStats"
 import { usePercentChange } from "@/hooks/usePercentChange"
@@ -12,7 +11,6 @@ import { SpendHistogram } from "@/components/spendHistogram"
 import { TransactionHistogram } from "@/components/countHistogram"
 import { SpendVolume7d } from "@/components/spendHistogram7d"
 import { CountHistogram7d } from "@/components/countHistogram7d"
-import { ArrowUp, ArrowDown } from "lucide-react"
 import { SpendHistogramAll } from "@/components/spendHistogramAll"
 import { ActiveUserAll } from "@/components/activeUsersHistogramAll"
 import { CumulativeSpendGraph } from "@/components/cumulativeSpendHistogramAll"
@@ -25,55 +23,23 @@ import { SpendHistogramDynamic } from "./spendHistogramDynamic"
 import { CumulativeSpendDynamic } from "./cumulativeSpendHistogramDynamic"
 import { CumulativeSpendHour } from "./cumulativeSpendHistogramHour"
 import { ActiveUsersHour } from "./activeUsersHistogramHour"
+import { ShareableStatCard } from "./ShareableStatCard"
+import { SharePreviewModal } from "./SharePreviewModal"
+import { useCardShare, type TimePeriod } from "@/hooks/useCardShare"
 
-type TimePeriod = "all" | "24h" | "7d" | "30d"
-type Category = "card spends" 
-
-interface StatCardProps {
-  label: string
-  value: string | number
-  change?: number
-  showChange?: boolean
-}
-
-function StatCard({ label, value, change, showChange }: StatCardProps) {
-  const hasChange = showChange && change !== undefined && change !== null
-  const isPositive = change && change > 0
-  const isNegative = change && change < 0
-
-  return (
-    <Card className="border border-border bg-background">
-      <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground mb-1">{label}</p>
-        <div className="flex items-end gap-2">
-          <p className="text-xl font-bold">{value}</p>
-          {hasChange && (
-            <div
-              className={`flex items-center gap-1 text-xs font-medium pb-0.5 ${
-                isPositive
-                  ? "text-green-600"
-                  : isNegative
-                  ? "text-gray-600"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {isPositive ? (
-                <ArrowUp className="w-3 h-3" />
-              ) : isNegative ? (
-                <ArrowDown className="w-3 h-3" />
-              ) : null}
-              <span>{Math.abs(change).toFixed(1)}%</span>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
+type Category = "card spends"
 
 export default function Dashboard() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all")
   const [category, setCategory] = useState<Category>("card spends")
+  
+  const {
+    sharePreview,
+    isPreviewOpen,
+    handleCardShare,
+    closePreview,
+    handleDownload,
+  } = useCardShare()
 
   // Card spends data
   const { data, loading, error } = useStats(timePeriod)
@@ -177,41 +143,53 @@ export default function Dashboard() {
                 {data && (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <StatCard
+                      <ShareableStatCard
                         label="Total Spends"
                         value={`$${(data.totalSpends / 100).toLocaleString()}`}
                         change={activeChanges?.totalSpends}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
-                      <StatCard
+                      <ShareableStatCard
                         label="Total Transactions"
                         value={data.totalTransactions.toLocaleString()}
                         change={activeChanges?.totalTransactions}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
-                      <StatCard
+                      <ShareableStatCard
                         label="Total Credit Created"
                         value={`$${(data.totalCreditCreated / 100).toLocaleString()}`}
                         change={activeChanges?.totalCreditCreated}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
-                      <StatCard
+                      <ShareableStatCard
                         label="Average Spend"
                         value={`$${(data.averageSpend / 100).toFixed(2)}`}
                         change={activeChanges?.averageSpend}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
-                      <StatCard
+                      <ShareableStatCard
                         label="Active Cards"
                         value={data.activeCards}
                         change={activeChanges?.activeCards}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
-                      <StatCard
+                      <ShareableStatCard
                         label="Unique Users"
                         value={data.uniqueUsers}
                         change={activeChanges?.uniqueUsers}
                         showChange={shouldShowChanges}
+                        timePeriod={timePeriod}
+                        onShare={handleCardShare}
                       />
                     </div>
 
@@ -261,123 +239,18 @@ export default function Dashboard() {
               </>
             )}
             
-            {/* Virtual Account Category */}
-            {/*
-            {category === "Virtual account" && (
-              <>
-                {vaLoading && (
-                  <p className="text-muted-foreground text-sm">
-                    Loading virtual account stats...
-                  </p>
-                )}
-                {vaError && (
-                  <p className="text-red-500 text-sm">Error: {vaError}</p>
-                )}
-
-                {vaData && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <StatCard
-                      label="Total Volume"
-                      value={`$${vaData.totalVolume.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}`}
-                      showChange={false}
-                    />
-                    <StatCard
-                      label="Total Transactions"
-                      value={vaData.count.toLocaleString()}
-                      showChange={false}
-                    />
-                    <StatCard
-                      label="Unique Virtual Accounts"
-                      value={vaData.uniqueVirtualAccounts}
-                      showChange={false}
-                    />
-                    <StatCard
-                      label="Unique Customers"
-                      value={vaData.uniqueCustomers}
-                      showChange={false}
-                    />
-                  </div>
-                )}
-              </>
-            )}
-            */}
-
-            {/* Wallet Category */}
-            {/*
-            {category === "wallet" && (
-              <>
-                {timePeriod !== "all" ? (
-                  <Card className="border border-border bg-background">
-                    <CardContent className="p-8 text-center">
-                      <p className="text-muted-foreground">
-                        Data for this time period not available yet.
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                    {(walletTxLoading || walletSwapLoading) && (
-                      <p className="text-muted-foreground text-sm">
-                        Loading wallet stats...
-                      </p>
-                    )}
-                    {(walletTxError || walletSwapError) && (
-                      <p className="text-red-500 text-sm">
-                        Error: {walletTxError || walletSwapError}
-                      </p>
-                    )}
-                    {walletTxData && walletSwapData && (
-                      <>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          <StatCard
-                            label="Swap Volume"
-                            value={`$${walletSwapData.total_volume_usd.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}`}
-                            showChange={false}
-                          />
-                          <StatCard
-                            label="Swap Count"
-                            value={walletSwapData.total_count.toLocaleString()}
-                            showChange={false}
-                          />
-                          <StatCard
-                            label="Transaction Volume"
-                            value={`$${walletTxData.total_volume_usd.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}`}
-                            showChange={false}
-                          />
-                          <StatCard
-                            label="Transaction Count"
-                            value={walletTxData.total_count.toLocaleString()}
-                            showChange={false}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-                          <WalletTransactionsHistogramAll />
-                          <CumulativeTransactionVolume />
-                          <WalletSwapHistogramAll />
-                          <CumulativeSwapVolume />
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </>
-            )}
-            */}
-            
           </div>
         </div>
       </div>
+
+      {sharePreview && (
+        <SharePreviewModal
+          sharePreview={sharePreview}
+          isOpen={isPreviewOpen}
+          onClose={closePreview}
+          onDownload={handleDownload}
+        />
+      )}
     </div>
   )
 }
