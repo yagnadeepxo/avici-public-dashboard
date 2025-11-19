@@ -115,6 +115,41 @@ export function ShareableStatCard({
         labelY + labelHeight / 2
       )
 
+      // Draw branding tag
+      const brandText = "avici.money"
+      const brandFont = "600 12px system-ui, -apple-system, sans-serif"
+      ctx.font = brandFont
+      ctx.textAlign = "left"
+      ctx.textBaseline = "middle"
+      const brandPaddingX = 10
+      const brandPaddingY = 6
+      const brandMetrics = ctx.measureText(brandText)
+      const brandHeight = 24
+      const brandWidth = brandMetrics.width + brandPaddingX * 2
+      const brandX = padding
+      const brandY = canvas.height - padding - brandHeight
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.85)"
+      ctx.beginPath()
+      ctx.moveTo(brandX + 8, brandY)
+      ctx.lineTo(brandX + brandWidth - 8, brandY)
+      ctx.quadraticCurveTo(brandX + brandWidth, brandY, brandX + brandWidth, brandY + 8)
+      ctx.lineTo(brandX + brandWidth, brandY + brandHeight - 8)
+      ctx.quadraticCurveTo(brandX + brandWidth, brandY + brandHeight, brandX + brandWidth - 8, brandY + brandHeight)
+      ctx.lineTo(brandX + 8, brandY + brandHeight)
+      ctx.quadraticCurveTo(brandX, brandY + brandHeight, brandX, brandY + brandHeight - 8)
+      ctx.lineTo(brandX, brandY + 8)
+      ctx.quadraticCurveTo(brandX, brandY, brandX + 8, brandY)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.fillStyle = "#ffffff"
+      ctx.fillText(
+        brandText,
+        brandX + brandPaddingX,
+        brandY + brandHeight / 2
+      )
+
       const finalDataUrl = canvas.toDataURL('image/png')
       onShare(finalDataUrl, label, timePeriod)
     } catch (error) {
