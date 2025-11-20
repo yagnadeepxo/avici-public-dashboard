@@ -59,11 +59,13 @@ export function useHistogramData() {
         return cached
       }
 
-      const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
+      const params = new URLSearchParams({
+        timeFrame: "1h",
+        timeStart,
+        timeEnd,
+      })
       const response = await fetch(
-        `${apiUrl}/api/users/stats?timeFrame=1h&timeStart=${encodeURIComponent(
-          timeStart
-        )}&timeEnd=${encodeURIComponent(timeEnd)}`
+        `/api/dashboard/users-stats?${params.toString()}`
       )
       if (!response.ok) {
         throw new Error('Failed to fetch hourly stats')

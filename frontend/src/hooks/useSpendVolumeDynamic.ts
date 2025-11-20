@@ -19,23 +19,66 @@ export const useSpendVolumeDynamic = (
   timeFrame: string = "24h",
   daysBack: number = 30
 ) => {
+  const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+  const getCache = <T,>(key: string): T | null => {
+    if (typeof window === "undefined") return null
+    try {
+      const raw = window.localStorage.getItem(key)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as { data: T; fetchedAt: number }
+      if (!parsed?.data || !parsed?.fetchedAt) return null
+      if (Date.now() - parsed.fetchedAt > CACHE_TTL_MS) return null
+      return parsed.data
+    } catch {
+      return null
+    }
+  }
+
+  const setCache = (key: string, data: unknown) => {
+    if (typeof window === "undefined") return
+    try {
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          fetchedAt: Date.now(),
+        })
+      )
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["spendVolumeDynamic", timeFrame, daysBack],
     queryFn: async () => {
       const timeEnd = new Date().toISOString()
       const timeStart = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
-      
-      const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
+
+      const cacheKey = `spendVolumeDynamic:${timeFrame}:${daysBack}`
+      const cached = getCache<UserStatsResponse>(cacheKey)
+      if (cached) {
+        return cached
+      }
+
+      const params = new URLSearchParams({
+        timeFrame,
+        timeStart,
+        timeEnd,
+      })
       const res = await fetch(
-        `${apiUrl}/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
+        `/api/dashboard/users-stats?${params.toString()}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch user stats")
       }
-      return res.json()
+      const json = await res.json()
+      setCache(cacheKey, json)
+      return json
     },
-    staleTime: 3600000, // 1 hour cache - data is fresh for 1 hour
-    gcTime: 7200000, // 2 hours - keep in cache for 2 hours
+    staleTime: CACHE_TTL_MS,
+    gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false, // Don't refetch if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus
     retry: 1,

@@ -45,7 +45,47 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
+
+  const getCache = <T,>(key: string): T | null => {
+    if (typeof window === "undefined") return null
+    try {
+      const raw = window.localStorage.getItem(key)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as { data: T; fetchedAt: number }
+      if (!parsed?.data || !parsed?.fetchedAt) return null
+      if (Date.now() - parsed.fetchedAt > CACHE_TTL_MS) return null
+      return parsed.data
+    } catch {
+      return null
+    }
+  }
+
+  const setCache = (key: string, data: unknown) => {
+    if (typeof window === "undefined") return
+    try {
+      window.localStorage.setItem(
+        key,
+        JSON.stringify({
+          data,
+          fetchedAt: Date.now(),
+        })
+      )
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   useEffect(() => {
+    const cacheKey = `percentChanges:${daysBack}`
+    const cached = getCache<PercentageChanges>(cacheKey)
+    if (cached) {
+      setChanges(cached)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     const fetchPercentChanges = async () => {
       try {
         setLoading(true)
@@ -71,10 +111,14 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
         const timeStart = comparisonDate.toISOString()
         const timeEnd = today.toISOString()
 
-        // Fetch data from the new API
-        const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
+        // Fetch data from the new API wrapper
+        const params = new URLSearchParams({
+          timeFrame: "24h",
+          timeStart,
+          timeEnd,
+        })
         const response = await fetch(
-          `${apiUrl}/api/users/stats?timeFrame=24h&timeStart=${timeStart}&timeEnd=${timeEnd}`
+          `/api/dashboard/users-stats?${params.toString()}`
         )
 
         if (!response.ok) {
@@ -180,6 +224,7 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
         }
 
         setChanges(percentageChanges)
+        setCache(cacheKey, percentageChanges)
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred")
         setChanges(null)

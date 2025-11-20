@@ -56,14 +56,18 @@ export const useActiveUserAll = (
     queryFn: async () => {
       // Use provided timeEnd or current date
       const endDate = timeEnd || new Date().toISOString()
-      const cacheKey = `activeUsersAll:${timeFrame}:${timeStart}:${endDate}`
+      const cacheKey = `activeUsersAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached
       }
-      const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
+      const params = new URLSearchParams({
+        timeFrame,
+        timeStart,
+        timeEnd: endDate,
+      })
       const res = await fetch(
-        `${apiUrl}/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
+        `/api/dashboard/users-stats?${params.toString()}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch active user stats")
@@ -72,8 +76,8 @@ export const useActiveUserAll = (
       setCache(cacheKey, json)
       return json
     },
-    staleTime: 3600000, // 1 hour cache - data is fresh for 1 hour
-    gcTime: 7200000, // 2 hours - keep in cache for 2 hours
+    staleTime: CACHE_TTL_MS,
+    gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false, // Don't refetch if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus
     retry: 1,

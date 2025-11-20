@@ -4,20 +4,10 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useStats } from "@/hooks/useDashboardStats"
 import { usePercentChange } from "@/hooks/usePercentChange"
-import { useVirtualAccountStats } from "@/hooks/useVirtualAccountStats"
-import { useWalletTransactionStats } from "@/hooks/useWalletTransactionStats"
-import { useWalletSwapStats } from "@/hooks/useWalletSwapStats"
 import { SpendHistogram } from "@/components/spendHistogram"
-import { TransactionHistogram } from "@/components/countHistogram"
-import { SpendVolume7d } from "@/components/spendHistogram7d"
-import { CountHistogram7d } from "@/components/countHistogram7d"
 import { SpendHistogramAll } from "@/components/spendHistogramAll"
 import { ActiveUserAll } from "@/components/activeUsersHistogramAll"
 import { CumulativeSpendGraph } from "@/components/cumulativeSpendHistogramAll"
-import { WalletTransactionsHistogramAll } from "@/components/walletTransactionsHistogramAll"
-import { CumulativeTransactionVolume } from "@/components/cumulativeWalletTransactionAll"
-import { WalletSwapHistogramAll } from "@/components/walletSwapHistogramAll"
-import { CumulativeSwapVolume } from "@/components/cumulativeWalletSwapAll"
 import { ActiveUserDynamic } from "@/components/activeUsersHistogramDynamic"
 import { SpendHistogramDynamic } from "./spendHistogramDynamic"
 import { CumulativeSpendDynamic } from "./cumulativeSpendHistogramDynamic"
@@ -58,26 +48,6 @@ export default function Dashboard() {
   }
 
   const activeChanges = changesByPeriod[timePeriod]
-
-  // Virtual account data
-  const {
-    data: vaData,
-    loading: vaLoading,
-    error: vaError,
-  } = useVirtualAccountStats(timePeriod)
-
-  // Wallet data
-  const {
-    data: walletTxData,
-    loading: walletTxLoading,
-    error: walletTxError,
-  } = useWalletTransactionStats()
-
-  const {
-    data: walletSwapData,
-    loading: walletSwapLoading,
-    error: walletSwapError,
-  } = useWalletSwapStats()
 
   const shouldShowChanges =
     timePeriod === "all" ||
