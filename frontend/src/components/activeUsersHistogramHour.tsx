@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
 	ResponsiveContainer,
 	ComposedChart,
@@ -21,6 +21,15 @@ export function ActiveUsersHour() {
 		const first = payload[0]
 		const value = first?.value ?? 0
 		const isIncomplete = first?.payload?.isIncomplete && value === 0
+		const point = first?.payload
+		let timeLabel = `${label}:00 UTC`
+		if (point?.timestamp) {
+			const date = new Date(point.timestamp)
+			const hour = date.getUTCHours()
+			const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
+			const day = date.getUTCDate()
+			timeLabel = `${hour}:00 UTC (${month} ${day})`
+		}
 		return (
 			<div
 				style={{
@@ -32,7 +41,7 @@ export function ActiveUsersHour() {
 					fontSize: 12,
 				}}
 			>
-				<div style={{ color: "#000", marginBottom: 2 }}>{label}:00 UTC</div>
+				<div style={{ color: "#000", marginBottom: 2 }}>{timeLabel}</div>
 				<div style={{ color: "#000" }}>
 					Active Users: {value}
 					{isIncomplete ? " (in progress)" : ""}
@@ -43,12 +52,9 @@ export function ActiveUsersHour() {
 
 	if (loading) {
 		return (
-			<Card className="border border-border bg-card">
-				<CardHeader>
-					<CardTitle className="text-lg font-semibold">Active Users (UTC)</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p className="text-muted-foreground text-sm">Loading active user data...</p>
+			<Card className="border border-border bg-background">
+				<CardContent className="p-6 text-center text-sm text-muted-foreground">
+					Loading active user data...
 				</CardContent>
 			</Card>
 		)
@@ -56,64 +62,83 @@ export function ActiveUsersHour() {
 
 	if (error) {
 		return (
-			<Card className="border border-border bg-card">
-				<CardHeader>
-					<CardTitle className="text-lg font-semibold">Active Users (UTC)</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<p className="text-red-500 text-sm">Error: {error}</p>
+			<Card className="border border-border bg-background">
+				<CardContent className="p-6 text-center text-sm text-red-500">
+					Error: {error}
 				</CardContent>
 			</Card>
 		)
 	}
 
-	// Build an array for 24 hours, fill with API values or 0 if missing/incomplete
-	const currentUtcHour = new Date().getUTCHours()
+	// Get rolling 24-hour window: sort and take latest 24 data points
 	const raw = Array.isArray(data?.graphData) ? data!.graphData : []
-	const series = Array.from({ length: 24 }, (_, hour) => {
-		// find the matching hour point if present
-		const match: any = raw.find((pt: any) => {
-			const ts = pt?.periodStart || pt?.timestamp
-			if (!ts) return false
-			return new Date(ts).getUTCHours() === hour
-		})
-		const value = (match?.activeUsers ?? 0) as number
-		const isIncomplete = hour === currentUtcHour
-		return { hour, activeUsers: value, isIncomplete }
+	const currentUtcHour = new Date().getUTCHours()
+	
+	// Sort by periodStart to ensure chronological order (oldest first)
+	const sortedData = [...raw].sort((a: any, b: any) => {
+		const dateA = new Date(a?.periodStart || a?.timestamp || 0).getTime()
+		const dateB = new Date(b?.periodStart || b?.timestamp || 0).getTime()
+		return dateA - dateB
+	})
+	
+	// Take only the latest 24 data points (rolling 24-hour window)
+	const latest24 = sortedData.slice(-24)
+	
+	// Map to series format with index, hour, and activeUsers
+	const series = latest24.map((pt: any, idx: number) => {
+		const timestamp = pt?.periodStart || pt?.timestamp
+		const date = timestamp ? new Date(timestamp) : new Date()
+		const hour = date.getUTCHours()
+		const value = (pt?.activeUsers ?? 0) as number
+		const isIncomplete = hour === currentUtcHour && value === 0
+		return { 
+			hour, 
+			activeUsers: value, 
+			isIncomplete,
+			index: idx,
+			timestamp
+		}
 	})
 
 	return (
-		<Card className="border border-border bg-card">
-			<CardHeader className="p-4 pb-2">
-				<CardTitle className="text-sm font-semibold">Active Users by Hour (UTC)</CardTitle>
-			</CardHeader>
-			<CardContent className="pt-0">
-				<div className="w-full h-[280px]">
+		<Card className="border border-border bg-background">
+			<CardContent className="p-4">
+				<p className="text-sm text-muted-foreground mb-2">
+					Active Users by Hour (Last 24 Hours)
+				</p>
+				<div className="w-full h-[300px]">
 					<ResponsiveContainer width="100%" height="100%">
-						<ComposedChart data={series} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
-							<CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+						<ComposedChart data={series}>
+							<CartesianGrid
+								strokeDasharray="3 3"
+								stroke="rgba(0,0,0,0.05)"
+								vertical={false}
+							/>
 							<XAxis
-								dataKey="hour"
-								label={{ value: "Hour (UTC)", position: "insideBottom", offset: -5, style: { fontSize: 12 } }}
-								tick={{ fontSize: 10 }}
-								tickLine={{ stroke: "#6b7280" }}
-								axisLine={{ stroke: "#6b7280" }}
+								dataKey="index"
+								tickLine={false}
+								axisLine={false}
+								tick={{ fill: "#888", fontSize: 12 }}
+								tickFormatter={(value, index) => {
+									const point = series[index]
+									return point ? `${point.hour}` : `${value}`
+								}}
 							/>
 							<YAxis
-								label={{ value: "active users", angle: -90, position: "insideLeft", style: { fontSize: 12 } }}
-								tick={{ fontSize: 10 }}
-								tickLine={{ stroke: "#6b7280" }}
-								axisLine={{ stroke: "#6b7280" }}
-								width={45}
+								tickLine={false}
+								axisLine={false}
+								tick={{ fill: "#888", fontSize: 12 }}
 							/>
 							<Tooltip
 								cursor={{ fill: "rgba(0,0,0,0.05)" }}
 								content={<CustomTooltip />}
-								wrapperStyle={{ color: "#000" }}
-								labelStyle={{ color: "#000" }}
-								itemStyle={{ color: "#000" }}
 							/>
-							<Bar dataKey="activeUsers" barSize={18} fill="rgba(0, 0, 0, 0.08)" radius={[4, 4, 0, 0]} />
+							<Bar
+								dataKey="activeUsers"
+								barSize={20}
+								fill="rgba(0, 0, 0, 0.4)"
+								radius={[4, 4, 0, 0]}
+							/>
 						</ComposedChart>
 					</ResponsiveContainer>
 				</div>

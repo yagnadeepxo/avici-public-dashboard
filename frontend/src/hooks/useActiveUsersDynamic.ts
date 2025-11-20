@@ -57,11 +57,13 @@ export const useActiveUserDynamic = (
       let timeEnd: string
 
       if (timeFrame === "1h") {
-        // For hourly charts, always use today's UTC midnight to tomorrow's UTC midnight
+        // Rolling 24-hour window: fetch from yesterday to tomorrow to ensure we have latest 24 hours
         const now = new Date()
-        const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
-        const end = new Date(start)
-        end.setUTCDate(end.getUTCDate() + 1)
+        // Start from 25 hours ago (yesterday minus 1 hour to ensure we have enough data)
+        const start = new Date(now.getTime() - 25 * 60 * 60 * 1000)
+        // End at tomorrow to ensure we have the latest data
+        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0))
+        const end = tomorrow
         timeStart = start.toISOString()
         timeEnd = end.toISOString()
       } else {

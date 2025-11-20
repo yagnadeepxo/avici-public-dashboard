@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 interface HistogramDataPoint {
   hour: number
   spend: number
+  index: number
+  timestamp: string
 }
 
 export function useHistogramData() {
@@ -40,11 +42,13 @@ export function useHistogramData() {
   const { data, isLoading, error } = useQuery<HistogramDataPoint[]>({
     queryKey: ['histogramData'],
     queryFn: async () => {
-      // Compute today's 00:00:00Z and tomorrow's 00:00:00Z in UTC
+      // Rolling 24-hour window: fetch from yesterday to tomorrow to ensure we have latest 24 hours
       const now = new Date()
-      const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
-      const end = new Date(start)
-      end.setUTCDate(end.getUTCDate() + 1)
+      // Start from 25 hours ago (yesterday minus 1 hour to ensure we have enough data)
+      const start = new Date(now.getTime() - 25 * 60 * 60 * 1000)
+      // End at tomorrow to ensure we have the latest data
+      const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0))
+      const end = tomorrow
 
       const timeStart = start.toISOString()
       const timeEnd = end.toISOString()
@@ -71,15 +75,26 @@ export function useHistogramData() {
         totalSpend: number
       }> = raw?.graphData || []
 
-      // Base 0-23 array, defaulting to 0
-      const hourly = Array.from({ length: 24 }, (_, hour) => ({ hour, spend: 0 }))
+      // Sort by periodStart to ensure chronological order (oldest first)
+      const sortedData = [...graphData].sort((a, b) => {
+        const dateA = new Date(a.periodStart || a.timestamp).getTime()
+        const dateB = new Date(b.periodStart || b.timestamp).getTime()
+        return dateA - dateB
+      })
 
-      // Fill from API -> use periodStart hour; convert cents to dollars
-      graphData.forEach((pt) => {
-        const hour = new Date(pt.periodStart || pt.timestamp).getUTCHours()
+      // Take only the latest 24 data points (rolling 24-hour window)
+      const latest24 = sortedData.slice(-24)
+
+      // Map to HistogramDataPoint format with actual UTC hour, spend in USD, index, and timestamp
+      const hourly = latest24.map((pt, idx) => {
+        const periodStart = pt.periodStart || pt.timestamp
+        const hour = new Date(periodStart).getUTCHours()
         const spendUsd = (pt.totalSpend || 0) / 100
-        if (hour >= 0 && hour <= 23) {
-          hourly[hour] = { hour, spend: spendUsd }
+        return { 
+          hour, 
+          spend: spendUsd,
+          index: idx, // 0-23 for X-axis ordering
+          timestamp: periodStart
         }
       })
 
