@@ -59,8 +59,9 @@ export function useHistogramData() {
         return cached
       }
 
+      const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
       const response = await fetch(
-        `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=1h&timeStart=${encodeURIComponent(
+        `${apiUrl}/api/users/stats?timeFrame=1h&timeStart=${encodeURIComponent(
           timeStart
         )}&timeEnd=${encodeURIComponent(timeEnd)}`
       )

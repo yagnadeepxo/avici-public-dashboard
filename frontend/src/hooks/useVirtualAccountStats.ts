@@ -26,7 +26,8 @@ export function useVirtualAccountStats(timePeriod: TimePeriod): UseVirtualAccoun
       setError(null)
 
       try {
-        const url = `https://wallet-cron-production.up.railway.app/api/virtual-accounts/activities?timeframe=${timePeriod}`
+        const apiUrl = process.env.NEXT_PUBLIC_WALLET_CRON_API_URL || 'https://wallet-cron-production.up.railway.app'
+        const url = `${apiUrl}/api/virtual-accounts/activities?timeframe=${timePeriod}`
         const response = await fetch(url)
         
         if (!response.ok) {

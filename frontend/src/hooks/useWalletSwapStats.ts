@@ -15,8 +15,9 @@ export const useWalletSwapStats = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        const apiUrl = process.env.NEXT_PUBLIC_PUBLIC_DASHBOARD_API_URL || 'https://avici-public-dashboard-production.up.railway.app'
         const res = await fetch(
-          "https://avici-public-dashboard-production.up.railway.app/api/wallet/swaps/summary"
+          `${apiUrl}/api/wallet/swaps/summary`
         );
         if (!res.ok) throw new Error("Failed to fetch swap stats");
         const json = await res.json();

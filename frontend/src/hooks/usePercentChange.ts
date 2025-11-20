@@ -72,8 +72,9 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
         const timeEnd = today.toISOString()
 
         // Fetch data from the new API
+        const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
         const response = await fetch(
-          `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=24h&timeStart=${timeStart}&timeEnd=${timeEnd}`
+          `${apiUrl}/api/users/stats?timeFrame=24h&timeStart=${timeStart}&timeEnd=${timeEnd}`
         )
 
         if (!response.ok) {

@@ -23,8 +23,9 @@ export function useStats(timeframe: string) {
       try {
         setLoading(true)
         setError(null)
+        const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
         const tf = timeframe.toUpperCase() === "ALL" ? "" : `?timeframe=${timeframe.toUpperCase()}`
-        const res = await fetch(`https://avici-cron-production.up.railway.app/api/total-stats${tf}`)
+        const res = await fetch(`${apiUrl}/api/total-stats${tf}`)
         if (!res.ok) throw new Error("Failed to fetch stats")
         const json = await res.json()
         setData(json)

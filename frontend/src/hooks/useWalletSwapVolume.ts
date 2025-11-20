@@ -26,8 +26,9 @@ export const useWalletSwapVolume = (
     queryFn: async () => {
       // Use provided timeEnd or current date
       const endDate = timeEnd || new Date().toISOString()
+      const apiUrl = process.env.NEXT_PUBLIC_WALLET_CRON_API_URL || 'https://wallet-cron-production.up.railway.app'
       const res = await fetch(
-        `https://wallet-cron-production.up.railway.app/api/stats/swaps?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
+        `${apiUrl}/api/stats/swaps?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${endDate}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch swap stats")

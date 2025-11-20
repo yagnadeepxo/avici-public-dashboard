@@ -80,8 +80,9 @@ export const useActiveUserDynamic = (
         return cached
       }
 
+      const apiUrl = process.env.NEXT_PUBLIC_AVICI_CRON_API_URL || 'https://avici-cron-production.up.railway.app'
       const res = await fetch(
-        `https://avici-cron-production.up.railway.app/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
+        `${apiUrl}/api/users/stats?timeFrame=${timeFrame}&timeStart=${timeStart}&timeEnd=${timeEnd}`
       )
       if (!res.ok) {
         throw new Error("Failed to fetch active user stats")
