@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ImageDown, Twitter, X } from "lucide-react"
+import { ImageDown, Loader2, Twitter, X } from "lucide-react"
 import type { SharePreview } from "@/hooks/useCardShare"
 
 interface SharePreviewModalProps {
@@ -17,7 +18,48 @@ export function SharePreviewModal({
   onClose,
   onDownload,
 }: SharePreviewModalProps) {
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareError, setShareError] = useState<string | null>(null)
+
   if (!isOpen) return null
+
+  const handleShareToTwitter = async () => {
+    try {
+      setIsSharing(true)
+      setShareError(null)
+
+      const response = await fetch("/api/share/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageDataUrl: sharePreview.imageDataUrl,
+          label: sharePreview.label,
+          timePeriod: sharePreview.timePeriod,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Upload failed" }))
+        throw new Error(errorData.error || `Upload failed: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const intentUrl = new URL("https://twitter.com/intent/tweet")
+      intentUrl.searchParams.set("url", data.shareUrl)
+      intentUrl.searchParams.set(
+        "text",
+        `Live card stats from Avici – ${sharePreview.label} (${sharePreview.timePeriod.toUpperCase()})`
+      )
+
+      window.open(intentUrl.toString(), "_blank", "noopener,noreferrer")
+    } catch (error) {
+      console.error("Share error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Unable to share to Twitter right now. Please try again."
+      setShareError(errorMessage)
+    } finally {
+      setIsSharing(false)
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -50,15 +92,27 @@ export function SharePreviewModal({
               <ImageDown className="w-4 h-4" />
               Download PNG
             </Button>
-            <Button variant="outline" className="gap-2" disabled>
-              <Twitter className="w-4 h-4" />
-              Share to Twitter (soon)
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleShareToTwitter}
+              disabled={isSharing}
+            >
+              {isSharing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Twitter className="w-4 h-4" />
+              )}
+              {isSharing ? "Preparing..." : "Share to Twitter"}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Tip: Download now, and the Twitter share button will arrive in a
-            future update.
-          </p>
+          {shareError ? (
+            <p className="text-xs text-red-500">{shareError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              When you share, we’ll host this image with Open Graph metadata so it pops right into your tweet.
+            </p>
+          )}
         </div>
       </div>
     </div>
