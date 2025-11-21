@@ -23,7 +23,8 @@ export function useSpendVolume7dData() {
         setLoading(true)
         setError(null)
 
-        const response = await fetch('https://avici-public-dashboard-production.up.railway.app/api/stats')
+        const apiUrl = process.env.NEXT_PUBLIC_PUBLIC_DASHBOARD_API_URL || 'https://avici-public-dashboard-production.up.railway.app'
+        const response = await fetch(`${apiUrl}/api/stats`)
         if (!response.ok) {
           throw new Error('Failed to fetch data')
         }
