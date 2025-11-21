@@ -166,7 +166,7 @@ export default function Dashboard() {
                         isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
-                        label="Unique Users"
+                        label="Active Users"
                         value={data.uniqueUsers}
                         change={activeChanges?.uniqueUsers}
                         showChange={shouldShowChanges}

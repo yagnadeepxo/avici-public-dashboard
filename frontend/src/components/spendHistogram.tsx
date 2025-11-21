@@ -1,8 +1,16 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { useHistogramData } from '@/hooks/useHistogramData'
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts"
+import { useHistogramData } from "@/hooks/useHistogramData"
 
 export function SpendHistogram() {
   const { data, loading, error } = useHistogramData()
@@ -35,7 +43,7 @@ export function SpendHistogram() {
         </p>
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+            <ComposedChart data={data}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -60,7 +68,10 @@ export function SpendHistogram() {
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
                 formatter={(value: number) => [
-                  `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                  `$${value.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}`,
                   "Hourly Spend",
                 ]}
                 labelFormatter={(label, payload) => {
@@ -68,7 +79,10 @@ export function SpendHistogram() {
                   if (point?.timestamp) {
                     const date = new Date(point.timestamp)
                     const hour = date.getUTCHours()
-                    const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
+                    const month = date.toLocaleString("en-US", {
+                      month: "short",
+                      timeZone: "UTC",
+                    })
                     const day = date.getUTCDate()
                     return `${hour}:00 UTC (${month} ${day})`
                   }
@@ -81,7 +95,7 @@ export function SpendHistogram() {
                 fill="rgba(0, 0, 0, 0.4)"
                 radius={[4, 4, 0, 0]}
               />
-            </BarChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
