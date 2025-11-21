@@ -1,3 +1,4 @@
+// useActiveCardsDynamic.ts
 import { useQuery } from "@tanstack/react-query"
 
 interface GraphPoint {
@@ -14,10 +15,9 @@ interface UserStatsResponse {
   graphData: GraphPoint[]
 }
 
-export const useActiveUserAll = (
-  timeFrame = "24h",
-  timeStart = "2025-01-01T00:00:00Z",
-  timeEnd?: string
+export const useActiveCardsDynamic = (
+  timeFrame: string = "24h",
+  daysBack: number = 30
 ) => {
   const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
@@ -50,21 +50,40 @@ export const useActiveUserAll = (
     }
   }
 
-  // Compute timeEnd inside queryFn to ensure it's fresh, but use stable key
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
-    queryKey: ["activeUsersAll", timeFrame, timeStart, timeEnd || "default"],
+    queryKey: ["activeCardsDynamic", timeFrame, daysBack],
     queryFn: async () => {
-      // Use provided timeEnd or current date
-      const endDate = timeEnd || new Date().toISOString()
-      const cacheKey = `activeUsersAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
+      let timeStart: string
+      let timeEnd: string
+
+      if (timeFrame === "1h") {
+        // Rolling 24-hour window: fetch from yesterday to tomorrow to ensure we have latest 24 hours
+        const now = new Date()
+        // Start from 25 hours ago (yesterday minus 1 hour to ensure we have enough data)
+        const start = new Date(now.getTime() - 25 * 60 * 60 * 1000)
+        // End at tomorrow to ensure we have the latest data
+        const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0))
+        const end = tomorrow
+        timeStart = start.toISOString()
+        timeEnd = end.toISOString()
+      } else {
+        // Fallback for non-hourly cases: rolling window based on daysBack
+        const end = new Date()
+        const start = new Date(end.getTime() - daysBack * 24 * 60 * 60 * 1000)
+        timeStart = start.toISOString()
+        timeEnd = end.toISOString()
+      }
+
+      const cacheKey = `activeCardsDynamic:${timeFrame}:${daysBack}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached
       }
+
       const params = new URLSearchParams({
         timeFrame,
         timeStart,
-        timeEnd: endDate,
+        timeEnd,
       })
       const res = await fetch(
         `/api/dashboard/users-stats?${params.toString()}`

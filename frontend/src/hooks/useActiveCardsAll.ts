@@ -14,7 +14,7 @@ interface UserStatsResponse {
   graphData: GraphPoint[]
 }
 
-export const useActiveUserAll = (
+export const useActiveCardsAll = (
   timeFrame = "24h",
   timeStart = "2025-01-01T00:00:00Z",
   timeEnd?: string
@@ -52,11 +52,11 @@ export const useActiveUserAll = (
 
   // Compute timeEnd inside queryFn to ensure it's fresh, but use stable key
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
-    queryKey: ["activeUsersAll", timeFrame, timeStart, timeEnd || "default"],
+    queryKey: ["activeCardsAll", timeFrame, timeStart, timeEnd || "default"],
     queryFn: async () => {
       // Use provided timeEnd or current date
       const endDate = timeEnd || new Date().toISOString()
-      const cacheKey = `activeUsersAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
+      const cacheKey = `activeCardsAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached

@@ -20,7 +20,7 @@ export function ActiveUserAll() {
     return (
       <Card className="border border-border bg-background">
         <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading active user data...
+          Loading active card data...
         </CardContent>
       </Card>
     )
@@ -42,13 +42,13 @@ export function ActiveUserAll() {
         month: "short",
         day: "numeric",
       }),
-      activeUsers: item.activeUsers,
+      activeCards: item.activeCards,
     })) || []
 
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground mb-2">Daily Active Users</p>
+        <p className="text-sm text-muted-foreground mb-2">Daily Active Cards</p>
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={graphData}>
@@ -70,11 +70,11 @@ export function ActiveUserAll() {
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                formatter={(val: number) => [val, "Active Users"]}
+                formatter={(val: number) => [val, "Active Cards"]}
               />
               {/* Light grey bars for each day's active users */}
               <Bar
-                dataKey="activeUsers"
+                dataKey="activeCards"
                 barSize={20}
                 fill="rgba(0, 0, 0, 0.08)"
                 radius={[4, 4, 0, 0]}
@@ -82,7 +82,7 @@ export function ActiveUserAll() {
               {/* Black trendline connecting peaks */}
               <Line
                 type="monotone"
-                dataKey="activeUsers"
+                dataKey="activeCards"
                 stroke="#000"
                 strokeWidth={1.8}
                 dot={false}

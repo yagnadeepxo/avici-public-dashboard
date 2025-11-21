@@ -6,13 +6,13 @@ import { useStats } from "@/hooks/useDashboardStats"
 import { usePercentChange } from "@/hooks/usePercentChange"
 import { SpendHistogram } from "@/components/spendHistogram"
 import { SpendHistogramAll } from "@/components/spendHistogramAll"
-import { ActiveUserAll } from "@/components/activeUsersHistogramAll"
+import { ActiveCardsAll } from "@/components/activeCardsHistogramAll"
 import { CumulativeSpendGraph } from "@/components/cumulativeSpendHistogramAll"
-import { ActiveUserDynamic } from "@/components/activeUsersHistogramDynamic"
+import { ActiveCardsDynamic } from "@/components/activeCardsHistogramDynamic"
 import { SpendHistogramDynamic } from "./spendHistogramDynamic"
 import { CumulativeSpendDynamic } from "./cumulativeSpendHistogramDynamic"
 import { CumulativeSpendHour } from "./cumulativeSpendHistogramHour"
-import { ActiveUsersHour } from "./activeUsersHistogramHour"
+import { ActiveCardsHour } from "./activeCardsHistogramHour"
 import { ShareableStatCard } from "./ShareableStatCard"
 import { SharePreviewModal } from "./SharePreviewModal"
 import { useCardShare, type TimePeriod } from "@/hooks/useCardShare"
@@ -29,6 +29,8 @@ export default function Dashboard() {
     handleCardShare,
     closePreview,
     handleDownload,
+    isGeneratingPreview,
+    previewError,
   } = useCardShare()
 
   // Card spends data
@@ -102,6 +104,11 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
+            {previewError && (
+              <div className="text-sm text-red-500 border border-destructive/40 bg-destructive/10 rounded-md px-3 py-2">
+                {previewError}
+              </div>
+            )}
             {/* Card Spends Category */}
             {category === "card spends" && (
               <>
@@ -120,6 +127,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
                         label="Total Transactions"
@@ -128,6 +136,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
                         label="Total Credit Created"
@@ -136,6 +145,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
                         label="Average Spend"
@@ -144,6 +154,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
                         label="Active Cards"
@@ -152,6 +163,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                       <ShareableStatCard
                         label="Unique Users"
@@ -160,6 +172,7 @@ export default function Dashboard() {
                         showChange={shouldShowChanges}
                         timePeriod={timePeriod}
                         onShare={handleCardShare}
+                        isPreparingShare={isGeneratingPreview}
                       />
                     </div>
 
@@ -169,7 +182,7 @@ export default function Dashboard() {
                         <SpendHistogram />
                         <CumulativeSpendHour />
                         </div>
-                        <ActiveUsersHour />
+                        <ActiveCardsHour />
                       </div>
                     )}
 
@@ -179,7 +192,7 @@ export default function Dashboard() {
                         <SpendHistogramDynamic daysBack={7} />
                         <CumulativeSpendDynamic daysBack={7} />
                         </div>
-                        <ActiveUserDynamic daysBack={7} />
+                        <ActiveCardsDynamic daysBack={7} />
                       </div>
                     )}
 
@@ -189,7 +202,7 @@ export default function Dashboard() {
                         <SpendHistogramDynamic daysBack={30} />
                         <CumulativeSpendDynamic daysBack={30} />
                         </div>
-                        <ActiveUserDynamic daysBack={30} />
+                        <ActiveCardsDynamic daysBack={30} />
                       </div>
                     )}
 
@@ -199,7 +212,7 @@ export default function Dashboard() {
                           <SpendHistogramAll />
                           <CumulativeSpendGraph />
                         </div>
-                        <ActiveUserAll />
+                        <ActiveCardsAll />
                       </div>
                     )}
 

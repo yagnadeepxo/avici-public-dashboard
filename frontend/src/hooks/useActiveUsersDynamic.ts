@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 
 interface GraphPoint {
   timestamp: string
-  activeUsers: number
+  activeCards: number
 }
 
 interface UserStatsResponse {
@@ -89,7 +89,7 @@ export const useActiveUserDynamic = (
         `/api/dashboard/users-stats?${params.toString()}`
       )
       if (!res.ok) {
-        throw new Error("Failed to fetch active user stats")
+        throw new Error("Failed to fetch active card stats")
       }
       const json = await res.json()
       setCache(cacheKey, json)

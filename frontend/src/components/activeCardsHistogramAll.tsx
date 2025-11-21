@@ -1,4 +1,3 @@
-// ActiveUserDynamic.tsx
 "use client"
 
 import {
@@ -11,38 +10,11 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts"
-import { useActiveUserDynamic } from "@/hooks/useActiveUsersDynamic"
+import { useActiveCardsAll } from "@/hooks/useActiveCardsAll"
 import { Card, CardContent } from "@/components/ui/card"
 
-interface ActiveUserDynamicProps {
-  timeFrame?: string
-  daysBack: number
-}
-
-export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDynamicProps) {
-  const { data, loading, error } = useActiveUserDynamic(timeFrame, daysBack)
-
-  // Custom tooltip: show a single "Active Users" row, all-black text
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload || payload.length === 0) return null
-    // Prefer the first payload value
-    const value = payload[0]?.value ?? 0
-    return (
-      <div
-        style={{
-          backgroundColor: "white",
-          border: "1px solid #e5e7eb",
-          borderRadius: 6,
-          padding: "6px 8px",
-          color: "#000",
-          fontSize: 12,
-        }}
-      >
-        <div style={{ color: "#000", marginBottom: 2 }}>{label}:00 UTC</div>
-        <div style={{ color: "#000" }}>Active Cards: {value}</div>
-      </div>
-    )
-  }
+export function ActiveCardsAll() {
+  const { data, loading, error } = useActiveCardsAll()
 
   if (loading) {
     return (
@@ -76,9 +48,7 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground mb-2">
-          Daily Active Cards (Last {daysBack} Days)
-        </p>
+        <p className="text-sm text-muted-foreground mb-2">Daily Active Cards</p>
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={graphData}>
@@ -100,10 +70,7 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                content={<CustomTooltip />}
-                wrapperStyle={{ color: "#000" }}
-                labelStyle={{ color: "#000" }}
-                itemStyle={{ color: "#000" }}
+                formatter={(val: number) => [val, "Active Cards"]}
               />
               {/* Light grey bars for each day's active users */}
               <Bar

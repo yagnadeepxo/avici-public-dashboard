@@ -1,4 +1,4 @@
-// ActiveUserDynamic.tsx
+// ActiveCardsDynamic.tsx
 "use client"
 
 import {
@@ -11,18 +11,18 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts"
-import { useActiveUserDynamic } from "@/hooks/useActiveUsersDynamic"
+import { useActiveCardsDynamic } from "@/hooks/useActiveCardsDynamic"
 import { Card, CardContent } from "@/components/ui/card"
 
-interface ActiveUserDynamicProps {
+interface ActiveCardsDynamicProps {
   timeFrame?: string
   daysBack: number
 }
 
-export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDynamicProps) {
-  const { data, loading, error } = useActiveUserDynamic(timeFrame, daysBack)
+export function ActiveCardsDynamic({ timeFrame = "24h", daysBack }: ActiveCardsDynamicProps) {
+  const { data, loading, error } = useActiveCardsDynamic(timeFrame, daysBack)
 
-  // Custom tooltip: show a single "Active Users" row, all-black text
+  // Custom tooltip: show a single "Active Cards" row, all-black text
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || payload.length === 0) return null
     // Prefer the first payload value

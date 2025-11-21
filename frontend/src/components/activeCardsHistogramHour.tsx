@@ -11,12 +11,12 @@ import {
 	CartesianGrid,
 	Tooltip,
 } from "recharts"
-import { useActiveUserDynamic } from "@/hooks/useActiveUsersDynamic"
+import { useActiveCardsDynamic } from "@/hooks/useActiveCardsDynamic"
 
-export function ActiveUsersHour() {
-	const { data, loading, error } = useActiveUserDynamic("1h", 1)
+export function ActiveCardsHour() {
+	const { data, loading, error } = useActiveCardsDynamic("1h", 1)
 
-	// Custom tooltip: single "Active Users" row, all-black text, note in-progress hour
+	// Custom tooltip: single "Active Cards" row, all-black text, note in-progress hour
 	const CustomTooltip = ({ active, payload, label }: any) => {
 		if (!active || !payload || payload.length === 0) return null
 		const first = payload[0]
@@ -85,7 +85,7 @@ export function ActiveUsersHour() {
 	// Take only the latest 24 data points (rolling 24-hour window)
 	const latest24 = sortedData.slice(-24)
 	
-	// Map to series format with index, hour, and activeUsers
+	// Map to series format with index, hour, and activeCards
 	const series = latest24.map((pt: any, idx: number) => {
 		const timestamp = pt?.periodStart || pt?.timestamp
 		const date = timestamp ? new Date(timestamp) : new Date()
