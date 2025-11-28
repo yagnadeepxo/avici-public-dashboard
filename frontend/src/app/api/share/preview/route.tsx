@@ -38,111 +38,189 @@ export async function POST(request: Request) {
             : "#a3a3a3"
         : "#a3a3a3"
 
-    const backgroundLayer = customBackgroundImage ? (
-      <div
-        key="background"
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `url(${customBackgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.85,
-          display: "flex",
-        }}
-      />
-    ) : null
+    // Get the base URL for the image
+    const host = request.headers.get("host")
+    const protocol = host?.includes("localhost") ? "http" : "https"
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      (host ? `${protocol}://${host}` : "http://localhost:3000")
+    
+    const cardBackgroundUrl = `${baseUrl}/card_background.png`
 
-    const gradientLayer = (
+    // Calculate font size based on value length
+    const valueLength = value.length
+    let fontSize = 150
+    
+    if (valueLength > 12) {
+      fontSize = 100
+    } else if (valueLength > 10) {
+      fontSize = 120
+    } else if (valueLength > 8) {
+      fontSize = 135
+    }
+
+    // Label text layer
+    const labelLayer = (
       <div
-        key="gradient"
         style={{
           position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.75) 60%, rgba(15,23,42,0.85) 100%)",
+          top: "280px",
+          left: "118.37px",
+          width: "963.4811401367188px",
+          height: "47.89156723022461px",
           display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+          fontWeight: 400,
+          fontSize: "39.76px",
+          lineHeight: "100%",
+          letterSpacing: "0.17em",
+          textAlign: "center",
+          color: "#5C5C5C",
+          opacity: 1,
         }}
-      />
+      >
+        {label}
+      </div>
     )
 
-    const contentLayer = (
+    // Value text layer with gradient - responsive font size
+    const valueLayer = (
       <div
-        key="content"
         style={{
+          position: "absolute",
+          top: "360px",
+          left: "100px",
+          width: "1000px",
+          height: "150px",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          padding: "72px",
-          width: "100%",
-          position: "relative",
+          alignItems: "center",
+          justifyContent: "center",
+          fontFamily: "SF Compact Rounded, system-ui, -apple-system, sans-serif",
+          fontWeight: 700,
+          fontSize: `${fontSize}px`,
+          lineHeight: `${fontSize}px`,
+          letterSpacing: "-0.02em",
+          textAlign: "center",
+          background: "linear-gradient(180deg, #2F2F2F -51.12%, #898989 100%)",
+          backgroundClip: "text",
+          WebkitBackgroundClip: "text",
+          color: "transparent",
+          opacity: 1,
+        }}
+      >
+        {value}
+      </div>
+    )
+
+    // Percentage change and timeframe container
+    const changeAndTimeframeLayer = changeLabel ? (
+      <div
+        style={{
+          position: "absolute",
+          top: "530px",
+          left: "481.83px",
+          width: "237.240966796875px",
+          height: "58.1204833984375px",
+          display: "flex",
+          alignItems: "center",
+          gap: "18.07px",
+          paddingBottom: "3px",
+          opacity: 1,
+        }}
+      >
+        {/* Percentage change text */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            color: changeColor,
+            fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+            fontSize: "24px",
+            fontWeight: 600,
+          }}
+        >
+          {changeLabel}
+        </div>
+        
+        {/* Timeframe badge */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "92.1686782836914px",
+            height: "55.1204833984375px",
+            borderRadius: "21.69px",
+            backgroundColor: "#F2F2F2",
+            gap: "9.04px",
+            padding: "0 12px",
+            fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+            fontSize: "16px",
+            fontWeight: 500,
+            color: "#5C5C5C",
+          }}
+        >
+          {timePeriod.toUpperCase()}
+        </div>
+      </div>
+    ) : (
+      // If no change, just show timeframe
+      <div
+        style={{
+          position: "absolute",
+          top: "530px",
+          left: "481.83px",
+          display: "flex",
+          alignItems: "center",
+          opacity: 1,
         }}
       >
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
+            justifyContent: "center",
+            width: "92.1686782836914px",
+            height: "55.1204833984375px",
+            borderRadius: "21.69px",
+            backgroundColor: "#F2F2F2",
+            gap: "9.04px",
+            padding: "0 12px",
+            fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+            fontSize: "16px",
+            fontWeight: 500,
+            color: "#5C5C5C",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-            }}
-          >
-            <p style={{ fontSize: 24, color: "#94a3b8", marginBottom: 12 }}>{label}</p>
-            <p style={{ fontSize: 96, fontWeight: 700, letterSpacing: -2 }}>{value}</p>
-          </div>
-          <div
-            style={{
-              padding: "12px 20px",
-              borderRadius: 999,
-              backgroundColor: "#1e293b",
-              fontSize: 28,
-              fontWeight: 600,
-              display: "flex",
-            }}
-          >
-            {timePeriod.toUpperCase()}
-          </div>
+          {timePeriod.toUpperCase()}
         </div>
+      </div>
+    )
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            {changeLabel && (
-              <div
-                style={{
-                  fontSize: 36,
-                  fontWeight: 600,
-                  color: changeColor,
-                }}
-              >
-                {changeLabel}
-              </div>
-            )}
-            <div style={{ width: 3, height: 64, backgroundColor: "rgba(148,163,184,0.4)" }} />
-            <div style={{ fontSize: 32, color: "#cbd5f5" }}>Live card stats from Avici</div>
-          </div>
-          <div
-            style={{
-              fontSize: 28,
-              letterSpacing: 4,
-              textTransform: "uppercase",
-              color: "#94a3b8",
-              display: "flex",
-            }}
-          >
-            avici.money
-          </div>
-        </div>
+    // Footer text layer
+    const footerLayer = (
+      <div
+        style={{
+          position: "absolute",
+          top: "586.48px",
+          left: "30px",
+          width: "228px",
+          height: "24px",
+          display: "flex",
+          alignItems: "center",
+          fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+          fontWeight: 400,
+          fontSize: "20px",
+          lineHeight: "100%",
+          letterSpacing: "0.2em",
+          color: "#5C5C5C",
+          opacity: 1,
+          whiteSpace: "nowrap",
+          overflow: "visible",
+        }}
+      >
+        avici.money | stats
       </div>
     )
 
@@ -151,17 +229,26 @@ export async function POST(request: Request) {
         <div
           style={{
             display: "flex",
-            width: "100%",
-            height: "100%",
-            fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+            width: `${WIDTH}px`,
+            height: `${HEIGHT}px`,
+            fontFamily: "SF Pro Rounded, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
             position: "relative",
-            backgroundColor: "#0f172a",
-            color: "#f8fafc",
+            overflow: "hidden",
           }}
         >
-          {backgroundLayer}
-          {gradientLayer}
-          {contentLayer}
+          <img
+            src={cardBackgroundUrl}
+            alt=""
+            style={{
+              width: `${WIDTH}px`,
+              height: `${HEIGHT}px`,
+              opacity: 1,
+            }}
+          />
+          {labelLayer}
+          {valueLayer}
+          {changeAndTimeframeLayer}
+          {footerLayer}
         </div>
       ),
       {
@@ -181,5 +268,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to generate preview" }, { status: 500 })
   }
 }
-
-
