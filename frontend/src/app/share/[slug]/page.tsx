@@ -24,25 +24,24 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params
   const data = await fetchShare(slug)
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://dashboard.avici.money").replace(/\/$/, "")
-  const defaultTitle = "Avici Dashboard"
-  const title = data ? `${data.label} · Avici Dashboard` : defaultTitle
-  const description = `Live card stats from Avici - ${data?.label || "Dashboard"} (${data?.time_period?.toUpperCase() || ""})`
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const title = `${data?.label} · Avici Card Stats`
+  const description = `Live card stats from Avici - ${data?.label} (${data?.time_period?.toUpperCase() || ""})`
   const imageUrl = data?.image_url
 
-  const metadataBase = new URL(siteUrl)
+  const metadataBase = siteUrl
   const shareUrl = `${siteUrl}/share/${slug}`
 
   const openGraph = {
     title,
     description,
     url: shareUrl,
-    siteName: "Avici Dashboard",
+    siteName: "Avici Card Stats",
     images: imageUrl ? [{ 
       url: imageUrl, 
       width: 1200, 
       height: 630, 
-      alt: data?.label ?? "Avici Dashboard" 
+      alt: data?.label ?? "Avici Card stats" 
     }] : [],
     type: "website" as const,
   }

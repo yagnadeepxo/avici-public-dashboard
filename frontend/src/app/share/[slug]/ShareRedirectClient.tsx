@@ -25,7 +25,7 @@ export default function ShareRedirectClient({ data }: ShareRedirectClientProps) 
 
   return (
     <div style={{ padding: "20px", textAlign: "center", fontFamily: "system-ui", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-      <h1>Redirecting to Avici Dashboard...</h1>
+      <h1>Redirecting to Avici Card Stats...</h1>
       <p>If you are not redirected, <a href="/">click here</a>.</p>
       <img 
         src={data.image_url} 

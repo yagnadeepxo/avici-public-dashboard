@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { ImageDown, Loader2, X } from "lucide-react"
 import type { SharePreview } from "@/hooks/useCardShare"
@@ -32,28 +32,80 @@ export function SharePreviewModal({
 }: SharePreviewModalProps) {
   const [isSharing, setIsSharing] = useState(false)
   const [shareError, setShareError] = useState<string | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const isUploadingRef = useRef(false)
 
   if (!isOpen) return null
 
-  const handleShareToTwitter = async () => {
+  const uploadWithRetry = async (
+    payload: {
+      imageDataUrl: string
+      label: string
+      timePeriod: string
+    },
+    retries = 2,
+    delay = 1000
+  ): Promise<Response> => {
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
+    // Create timeout promise (15 seconds)
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => {
+        controller.abort()
+        reject(new Error("Upload timeout: Request took too long. Please check your connection and try again."))
+      }, 15000)
+    })
+
+    // Create fetch promise
+    const fetchPromise = fetch("/api/share/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    })
+
     try {
-      setIsSharing(true)
-      setShareError(null)
-
-      const response = await fetch("/api/share/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageDataUrl: sharePreview.imageDataUrl,
-          label: sharePreview.label,
-          timePeriod: sharePreview.timePeriod,
-        }),
-      })
-
+      const response = await Promise.race([fetchPromise, timeoutPromise])
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Upload failed" }))
         throw new Error(errorData.error || `Upload failed: ${response.status}`)
       }
+
+      return response
+    } catch (error) {
+      // If aborted, don't retry
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error("Upload timeout: Request took too long. Please check your connection and try again.")
+      }
+
+      // Retry logic
+      if (retries > 0 && !controller.signal.aborted) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        return uploadWithRetry(payload, retries - 1, delay * 2) // Exponential backoff
+      }
+
+      throw error
+    }
+  }
+
+  const handleShareToTwitter = async () => {
+    // Prevent duplicate clicks
+    if (isUploadingRef.current || isSharing) {
+      return
+    }
+
+    try {
+      isUploadingRef.current = true
+      setIsSharing(true)
+      setShareError(null)
+
+      const response = await uploadWithRetry({
+        imageDataUrl: sharePreview.imageDataUrl,
+        label: sharePreview.label,
+        timePeriod: sharePreview.timePeriod,
+      })
 
       const data = await response.json()
       const intentUrl = new URL("https://twitter.com/intent/tweet")
@@ -77,10 +129,23 @@ export function SharePreviewModal({
       }
     } catch (error) {
       console.error("Share error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Unable to share to Twitter right now. Please try again."
+      let errorMessage = "Unable to share to X right now. Please try again."
+      
+      if (error instanceof Error) {
+        if (error.message.includes("timeout")) {
+          errorMessage = error.message
+        } else if (error.message.includes("Failed to upload")) {
+          errorMessage = "Failed to upload image. Please check your connection and try again."
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
       setShareError(errorMessage)
     } finally {
       setIsSharing(false)
+      isUploadingRef.current = false
+      abortControllerRef.current = null
     }
   }
 
