@@ -91,7 +91,7 @@ export default function Dashboard() {
               lineHeight: 'normal'
             }}
           >
-            Avici Card Spends Dashboard
+            Avici Card Stats
           </h1>
           
           {/* Time Period Selector */}

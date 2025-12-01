@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Avici Card Spends Dashboard",
+  title: "Avici Card Stats",
   description: "",
 };
 
