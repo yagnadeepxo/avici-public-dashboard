@@ -63,7 +63,18 @@ export function SharePreviewModal({
         `Live card stats from Avici – ${sharePreview.label} (${sharePreview.timePeriod.toUpperCase()})`
       )
 
-      window.open(intentUrl.toString(), "_blank", "noopener,noreferrer")
+      // Detect mobile devices - use window.location.href for mobile to avoid popup blockers
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      ) || window.innerWidth <= 768
+
+      if (isMobile) {
+        // On mobile, navigate directly (won't be blocked by popup blockers)
+        window.location.href = intentUrl.toString()
+      } else {
+        // On desktop, open in new tab
+        window.open(intentUrl.toString(), "_blank", "noopener,noreferrer")
+      }
     } catch (error) {
       console.error("Share error:", error)
       const errorMessage = error instanceof Error ? error.message : "Unable to share to Twitter right now. Please try again."
@@ -78,7 +89,6 @@ export function SharePreviewModal({
       <div className="bg-card border border-border rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <div>
-            <p className="text-sm text-muted-foreground">Share Preview</p>
             <p className="text-base font-semibold">
               {sharePreview.label} - {sharePreview.timePeriod.toUpperCase()}
             </p>
@@ -98,6 +108,7 @@ export function SharePreviewModal({
         <div className="border-t border-border px-5 py-4 flex flex-col gap-3">
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
+              variant="outline"
               className="gap-2"
               onClick={onDownload}
             >
@@ -105,7 +116,6 @@ export function SharePreviewModal({
               Download PNG
             </Button>
             <Button
-              variant="outline"
               className="gap-2"
               onClick={handleShareToTwitter}
               disabled={isSharing}
@@ -122,7 +132,6 @@ export function SharePreviewModal({
             <p className="text-xs text-red-500">{shareError}</p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              When you share, we’ll host this image with Open Graph metadata so it pops right into your tweet.
             </p>
           )}
         </div>

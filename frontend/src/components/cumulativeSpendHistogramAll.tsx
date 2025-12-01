@@ -19,7 +19,10 @@ export function CumulativeSpendGraph() {
   if (loading) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-muted-foreground">
+        <CardContent 
+          className="p-6 text-center text-sm text-muted-foreground"
+          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+        >
           Loading cumulative spend data...
         </CardContent>
       </Card>
@@ -29,7 +32,10 @@ export function CumulativeSpendGraph() {
   if (error) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-red-500">
+        <CardContent 
+          className="p-6 text-center text-sm text-red-500"
+          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+        >
           Error: {error}
         </CardContent>
       </Card>
@@ -53,7 +59,10 @@ export function CumulativeSpendGraph() {
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground mb-2">
+        <p 
+          className="text-sm text-muted-foreground mb-2"
+          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+        >
           Cumulative Spend Over Time
         </p>
         <div className="w-full h-[300px]">
@@ -78,7 +87,7 @@ export function CumulativeSpendGraph() {
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                formatter={(val: number) => [`$${val.toFixed(2)}`, "Cumulative Spend"]}
+                formatter={(val: number) => [`$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Cumulative Spend"]}
               />
               {/* Black trendline for cumulative spend */}
               <Line

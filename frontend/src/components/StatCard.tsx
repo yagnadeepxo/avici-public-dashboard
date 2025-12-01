@@ -18,9 +18,19 @@ export function StatCard({ label, value, change, showChange }: StatCardProps) {
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground mb-1">{label}</p>
+        <p 
+          className="text-xs text-muted-foreground mb-1"
+          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+        >
+          {label}
+        </p>
         <div className="flex items-end gap-2">
-          <p className="text-xl font-bold">{value}</p>
+          <p 
+            className="text-xl font-bold"
+            style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+          >
+            {value}
+          </p>
           {hasChange && (
             <div
               className={`flex items-center gap-1 text-xs font-medium pb-0.5 ${
@@ -30,6 +40,7 @@ export function StatCard({ label, value, change, showChange }: StatCardProps) {
                   ? "text-gray-600"
                   : "text-muted-foreground"
               }`}
+              style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
             >
               {isPositive ? (
                 <ArrowUp className="w-3 h-3" />

@@ -24,7 +24,7 @@ export const useTotalCardSpendAll = (
   const getCache = <T,>(key: string): T | null => {
     if (typeof window === "undefined") return null
     try {
-      const raw = window.localStorage.getItem(key)
+      const raw = window.sessionStorage.getItem(key)
       if (!raw) return null
       const parsed = JSON.parse(raw) as { data: T; fetchedAt: number }
       if (!parsed?.data || !parsed?.fetchedAt) return null
@@ -38,7 +38,7 @@ export const useTotalCardSpendAll = (
   const setCache = (key: string, data: unknown) => {
     if (typeof window === "undefined") return
     try {
-      window.localStorage.setItem(
+      window.sessionStorage.setItem(
         key,
         JSON.stringify({
           data,

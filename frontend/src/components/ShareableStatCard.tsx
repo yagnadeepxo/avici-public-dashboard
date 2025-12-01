@@ -48,7 +48,7 @@ export function ShareableStatCard({
         onClick={handleShare}
         variant="ghost"
         size="icon"
-        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7"
+        className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-7 w-7"
         disabled={isPreparingShare}
         title="Share this card"
       >

@@ -18,7 +18,10 @@ export function CumulativeSpendHour() {
 	if (loading) {
 		return (
 			<Card className="border border-border bg-background">
-				<CardContent className="p-6 text-center text-sm text-muted-foreground">
+				<CardContent 
+					className="p-6 text-center text-sm text-muted-foreground"
+					style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+				>
 					Loading cumulative spend data...
 				</CardContent>
 			</Card>
@@ -28,7 +31,10 @@ export function CumulativeSpendHour() {
 	if (error) {
 		return (
 			<Card className="border border-border bg-background">
-				<CardContent className="p-6 text-center text-sm text-red-500">
+				<CardContent 
+					className="p-6 text-center text-sm text-red-500"
+					style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+				>
 					Error: {error}
 				</CardContent>
 			</Card>
@@ -48,10 +54,13 @@ export function CumulativeSpendHour() {
 
 	return (
 		<Card className="border border-border bg-background">
-			<CardContent className="p-4">
-				<p className="text-sm text-muted-foreground mb-2">
-					Cumulative Spend (Last 24 Hours)
-				</p>
+		<CardContent className="p-4">
+			<p 
+				className="text-sm text-muted-foreground mb-2"
+				style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+			>
+				Cumulative Spend (Last 24 Hours)
+			</p>
 				<div className="w-full h-[300px]">
 					<ResponsiveContainer width="100%" height="100%">
 						<ComposedChart data={cumulativeSeries}>
@@ -74,12 +83,12 @@ export function CumulativeSpendHour() {
 								tickLine={false}
 								axisLine={false}
 								tick={{ fill: "#888", fontSize: 12 }}
-								tickFormatter={(val) => `$${Number(val).toLocaleString()}`}
+								tickFormatter={(val) => `$${Number(val).toLocaleString('en-US')}`}
 							/>
 							<Tooltip
 								cursor={{ fill: "rgba(0,0,0,0.05)" }}
 								formatter={(value: number) => [
-									`$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+									`$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
 									"Cumulative Spend",
 								]}
 								labelFormatter={(label, payload) => {
