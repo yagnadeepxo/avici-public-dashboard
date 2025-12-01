@@ -44,15 +44,15 @@ export function PasscodeGate({ onSuccess }: PasscodeGateProps) {
       style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
     >
       <Card className="w-full max-w-md border border-border bg-card shadow-xl">
-        <CardHeader>
+        <CardHeader className="px-4 sm:px-6">
           <CardTitle 
-            className="text-xl font-semibold text-center"
+            className="text-lg sm:text-xl font-semibold text-center break-words"
             style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
           >
             Enter Passcode
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <input
@@ -62,7 +62,7 @@ export function PasscodeGate({ onSuccess }: PasscodeGateProps) {
                 value={passcode}
                 onChange={handleInputChange}
                 placeholder="Enter 4-digit passcode"
-                className="w-full px-4 py-3 text-center text-2xl tracking-widest border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="w-full px-3 sm:px-4 py-3 text-center text-xl sm:text-2xl tracking-widest border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                 style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
                 maxLength={4}
                 autoFocus
@@ -70,7 +70,7 @@ export function PasscodeGate({ onSuccess }: PasscodeGateProps) {
             </div>
             {error && (
               <p 
-                className="text-sm text-red-500 text-center"
+                className="text-xs sm:text-sm text-red-500 text-center break-words px-2"
                 style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
               >
                 {error}
