@@ -33,14 +33,13 @@ export default async function ShareDebugPage({ params }: DebugPageProps) {
 
       <h2>OG Tags (as they appear in HTML):</h2>
       <pre style={{ background: "#f5f5f5", padding: "20px", borderRadius: "8px", overflow: "auto" }}>
-{`<meta property="og:title" content="${data.label} · Avici Dashboard" />
-<meta property="og:description" content="Live card stats powered by Avici." />
+{`<meta property="og:description" content="Live card stats powered by Avici." />
 <meta property="og:image" content="${data.image_url}" />
 <meta property="og:url" content="${shareUrl}" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="${data.label} · Avici Dashboard" />
-<meta name="twitter:description" content="Live card stats powered by Avici." />
-<meta name="twitter:image" content="${data.image_url}" />`}
+<meta name="twitter:description" content="Live card stats by Avici." />
+<meta name="twitter:image" content="${data.image_url}" />
+<meta name="twitter:creator" content="@AviciMoney" />`}
       </pre>
 
       <h2>Image Preview:</h2>

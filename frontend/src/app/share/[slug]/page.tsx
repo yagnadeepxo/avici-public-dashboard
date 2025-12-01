@@ -25,7 +25,6 @@ export async function generateMetadata(
   const { slug } = await params
   const data = await fetchShare(slug)
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  const title = `${data?.label} · Avici Card Stats`
   const description = `Live card stats from Avici - ${data?.label} (${data?.time_period?.toUpperCase() || ""})`
   const imageUrl = data?.image_url
 
@@ -33,7 +32,6 @@ export async function generateMetadata(
   const shareUrl = `${siteUrl}/share/${slug}`
 
   const openGraph = {
-    title,
     description,
     url: shareUrl,
     siteName: "Avici Card Stats",
@@ -49,16 +47,14 @@ export async function generateMetadata(
   const twitter = imageUrl
     ? {
         card: "summary_large_image" as const,
-        title,
         description,
         images: [imageUrl],
-        creator: "@avici",
+        creator: "@AviciMoney",
       }
     : undefined
 
   return {
     metadataBase,
-    title,
     description,
     openGraph,
     twitter,
