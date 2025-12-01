@@ -49,13 +49,17 @@ export async function POST(request: Request) {
     // Calculate font size based on value length
     const valueLength = value.length
     let fontSize = 150
+    let fontWeight = 900
     
     if (valueLength > 12) {
       fontSize = 100
+      fontWeight = 900
     } else if (valueLength > 10) {
       fontSize = 120
+      fontWeight = 900
     } else if (valueLength > 8) {
       fontSize = 135
+      fontWeight = 900
     }
 
     // Label text layer
@@ -84,7 +88,7 @@ export async function POST(request: Request) {
       </div>
     )
 
-    // Value text layer with gradient - responsive font size
+    // Value text layer with gradient - responsive font size, bold and fat
     const valueLayer = (
       <div
         style={{
@@ -96,8 +100,8 @@ export async function POST(request: Request) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "SF Compact Rounded, system-ui, -apple-system, sans-serif",
-          fontWeight: 700,
+          fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
+          fontWeight: fontWeight,
           fontSize: `${fontSize}px`,
           lineHeight: `${fontSize}px`,
           letterSpacing: "-0.02em",
@@ -105,11 +109,13 @@ export async function POST(request: Request) {
           background: "linear-gradient(180deg, #2F2F2F -51.12%, #898989 100%)",
           backgroundClip: "text",
           WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
           color: "transparent",
           opacity: 1,
+          textShadow: "none",
         }}
       >
-        {value}
+        <span style={{ fontWeight: 900 }}>{value}</span>
       </div>
     )
 
@@ -156,7 +162,7 @@ export async function POST(request: Request) {
             gap: "9.04px",
             padding: "0 12px",
             fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
-            fontSize: "16px",
+            fontSize: "22px",
             fontWeight: 500,
             color: "#5C5C5C",
           }}
@@ -188,7 +194,7 @@ export async function POST(request: Request) {
             gap: "9.04px",
             padding: "0 12px",
             fontFamily: "SF Pro Rounded, system-ui, -apple-system, sans-serif",
-            fontSize: "16px",
+            fontSize: "22px",
             fontWeight: 500,
             color: "#5C5C5C",
           }}
