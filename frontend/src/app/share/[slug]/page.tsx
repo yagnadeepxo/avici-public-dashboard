@@ -34,7 +34,6 @@ export async function generateMetadata(
   const openGraph = {
     description,
     url: shareUrl,
-    siteName: "Avici Card Stats",
     images: imageUrl ? [{ 
       url: imageUrl, 
       width: 1200, 
