@@ -4,11 +4,7 @@ import { customAlphabet } from "nanoid"
 
 const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 10)
 
-interface UploadPayload {
-  imageDataUrl: string
-  label: string
-  timePeriod: string
-}
+// FormData payload - no interface needed as we parse it directly
 
 const bucketName = process.env.NEXT_PUBLIC_BUCKET_NAME || process.env.SUPABASE_BUCKET_NAME
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "")
@@ -22,25 +18,30 @@ const BUCKET_NAME: string = bucketName
 
 export async function POST(request: Request) {
   try {
-    const { imageDataUrl, label, timePeriod } = (await request.json()) as UploadPayload
+    // Parse FormData (much faster than base64 JSON)
+    const formData = await request.formData()
+    const imageFile = formData.get('image') as File | null
+    const label = formData.get('label') as string | null
+    const timePeriod = formData.get('timePeriod') as string | null
 
-    if (!imageDataUrl?.startsWith("data:image")) {
-      return NextResponse.json({ error: "Invalid image data" }, { status: 400 })
+    if (!imageFile) {
+      return NextResponse.json({ error: "Missing image file" }, { status: 400 })
     }
 
     if (!label || !timePeriod) {
       return NextResponse.json({ error: "Missing label or timePeriod" }, { status: 400 })
     }
 
-    const base64Content = imageDataUrl.split(",")[1]
-    if (!base64Content) {
-      return NextResponse.json({ error: "Malformed image data" }, { status: 400 })
+    // Validate file type
+    if (!imageFile.type.startsWith('image/')) {
+      return NextResponse.json({ error: "Invalid file type. Expected an image." }, { status: 400 })
     }
 
-    // Validate and convert base64 to buffer
+    // Convert File to Buffer (direct binary, no base64 overhead)
     let buffer: Buffer
     try {
-      buffer = Buffer.from(base64Content, "base64")
+      const arrayBuffer = await imageFile.arrayBuffer()
+      buffer = Buffer.from(arrayBuffer)
       
       // Validate buffer size (max 5MB to prevent abuse)
       const maxSize = 5 * 1024 * 1024 // 5MB
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
       }
 
       if (buffer.length === 0) {
-        return NextResponse.json({ error: "Invalid image data: empty buffer" }, { status: 400 })
+        return NextResponse.json({ error: "Invalid image data: empty file" }, { status: 400 })
       }
     } catch (bufferError) {
       console.error("Buffer conversion error:", bufferError)
@@ -106,6 +107,7 @@ export async function POST(request: Request) {
       }, { status: 500 })
     }
 
+    // Get public URL (this is instant, no network call)
     const {
       data: { publicUrl },
     } = supabaseServer.storage.from(BUCKET_NAME).getPublicUrl(filePath)
@@ -156,10 +158,10 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Unexpected error in upload route:", error)
     
-    // Handle JSON parsing errors
-    if (error instanceof SyntaxError || (error as any).message?.includes("JSON")) {
+    // Handle FormData parsing errors
+    if (error instanceof TypeError && error.message?.includes("formData")) {
       return NextResponse.json({ 
-        error: "Invalid request data" 
+        error: "Invalid request format. Expected FormData." 
       }, { status: 400 })
     }
     

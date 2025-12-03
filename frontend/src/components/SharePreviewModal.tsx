@@ -37,12 +37,23 @@ export function SharePreviewModal({
 
   if (!isOpen) return null
 
+  // Convert base64 data URL to Blob for efficient binary upload
+  const base64ToBlob = (base64: string): Blob => {
+    const arr = base64.split(',')
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png'
+    const bstr = atob(arr[1])
+    let n = bstr.length
+    const u8arr = new Uint8Array(n)
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n)
+    }
+    return new Blob([u8arr], { type: mime })
+  }
+
   const uploadWithRetry = async (
-    payload: {
-      imageDataUrl: string
-      label: string
-      timePeriod: string
-    },
+    imageBlob: Blob,
+    label: string,
+    timePeriod: string,
     retries = 2,
     delay = 1000
   ): Promise<Response> => {
@@ -57,11 +68,16 @@ export function SharePreviewModal({
       }, 15000)
     })
 
-    // Create fetch promise
+    // Create FormData for binary upload (much faster than base64 JSON)
+    const formData = new FormData()
+    formData.append('image', imageBlob, 'share.png')
+    formData.append('label', label)
+    formData.append('timePeriod', timePeriod)
+
+    // Create fetch promise - don't set Content-Type header, browser will set it with boundary
     const fetchPromise = fetch("/api/share/upload", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: formData,
       signal: controller.signal,
     })
 
@@ -83,7 +99,7 @@ export function SharePreviewModal({
       // Retry logic
       if (retries > 0 && !controller.signal.aborted) {
         await new Promise((resolve) => setTimeout(resolve, delay))
-        return uploadWithRetry(payload, retries - 1, delay * 2) // Exponential backoff
+        return uploadWithRetry(imageBlob, label, timePeriod, retries - 1, delay * 2) // Exponential backoff
       }
 
       throw error
@@ -101,11 +117,14 @@ export function SharePreviewModal({
       setIsSharing(true)
       setShareError(null)
 
-      const response = await uploadWithRetry({
-        imageDataUrl: sharePreview.imageDataUrl,
-        label: sharePreview.label,
-        timePeriod: sharePreview.timePeriod,
-      })
+      // Convert base64 to blob for efficient binary upload
+      const imageBlob = base64ToBlob(sharePreview.imageDataUrl)
+
+      const response = await uploadWithRetry(
+        imageBlob,
+        sharePreview.label,
+        sharePreview.timePeriod
+      )
 
       const data = await response.json()
       const intentUrl = new URL("https://twitter.com/intent/tweet")
