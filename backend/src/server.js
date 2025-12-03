@@ -5,18 +5,20 @@ const { runHourlyJob } = require("./cron/hourly");
 const { runDailyJob } = require("./cron/daily");
 const { cleanupPreviousDay } = require("./cron/cleanup_previous_day");
 
-require("./cron/wallet_swap_daily");
-require("./cron/wallet_transaction_daily");
+//require("./cron/wallet_swap_daily");
+//require("./cron/wallet_transaction_daily");
+require("./cron/daily_alltime_stats");
 
 const { supabase } = require("./db");
 require("dotenv").config();
 const walletTransactionRoute = require("./routes/wallet_transaction_route/wallet_transaction");
 const walletSwapRoute = require("./routes/wallet_swap_route/wallet_swaps");
+const dailyAlltimeStatsRoute = require("./routes/daily_alltime_stats_route/daily_alltime_stats");
 const app = express();
 
 // ✅ Enable CORS
 app.use(cors({
-  origin: ["http://localhost:3000", "https://avici-public-dashboard.vercel.app"], // frontend URL
+  origin: ["http://localhost:3000", "https://endbanks.org"], // frontend URL
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
@@ -57,12 +59,13 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
-app.use("/api/wallet", walletTransactionRoute);
-app.use("/api/wallet", walletSwapRoute);
+//app.use("/api/wallet", walletTransactionRoute);
+//app.use("/api/wallet", walletSwapRoute);
+app.use("/api/daily-alltime-stats", dailyAlltimeStatsRoute);
 // ⏰ Cron Jobs
-cron.schedule("0 * * * *", runHourlyJob); // every hour
-cron.schedule("0 0 * * *", runDailyJob);  // every day at midnight
-cron.schedule("0 1 * * *", cleanupPreviousDay); // every day at 1 AM UTC to clean previous day's hourly data
+//cron.schedule("0 * * * *", runHourlyJob); // every hour
+//cron.schedule("0 0 * * *", runDailyJob);  // every day at midnight
+//cron.schedule("0 1 * * *", cleanupPreviousDay); // every day at 1 AM UTC to clean previous day's hourly data
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
