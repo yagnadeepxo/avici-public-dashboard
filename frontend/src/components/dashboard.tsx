@@ -43,7 +43,7 @@ export default function Dashboard() {
     "24h": dailyChanges,
     "7d": weeklyChanges,
     "30d": monthlyChanges,
-    all: dailyChanges,
+    all: null
   }
 
   const activeChanges = changesByPeriod[timePeriod]
