@@ -4,6 +4,7 @@ interface PercentageChanges {
   totalSpends: number
   totalTransactions: number
   totalCreditCreated: number
+  totalSpendTransactions: number
   averageSpend: number
   activeCards: number
   uniqueUsers: number
@@ -151,6 +152,10 @@ export function useAlltimePercentChange(): PercentChangeResponse {
           totalTransactions: calculateChange(
             yesterdayStats.total_transactions,
             dayBeforeYesterdayStats.total_transactions
+          ),
+          totalSpendTransactions: calculateChange(
+            yesterdayStats.spend_transaction_count,
+            dayBeforeYesterdayStats.spend_transaction_count
           ),
           totalCreditCreated: calculateChange(
             yesterdayStats.total_credit_created,

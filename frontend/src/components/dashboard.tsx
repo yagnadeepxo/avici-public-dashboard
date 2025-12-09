@@ -176,6 +176,15 @@ export default function Dashboard() {
                     isPreparingShare={isGeneratingPreview}
                   />
                   <ShareableStatCard
+                    label="Total Spend Transactions"
+                    value={data.spendTransactionCount.toLocaleString('en-US')}
+                    change={activeChanges?.totalSpendTransactions}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
                     label="Total Credit Created"
                     value={`$${(data.totalCreditCreated / 100).toLocaleString('en-US')}`}
                     change={activeChanges?.totalCreditCreated}

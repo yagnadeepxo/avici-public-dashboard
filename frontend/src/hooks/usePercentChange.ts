@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 interface PercentageChanges {
   totalSpends: number
   totalTransactions: number
+  totalSpendTransactions: number
   totalCreditCreated: number
   averageSpend: number
   activeCards: number
@@ -211,6 +212,10 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
           totalCreditCreated: calculateChange(
             yesterdayTotalCredit,
             comparisonTotalCredit
+          ),
+          totalSpendTransactions: calculateChange(
+            yesterdayData.spendCount,
+            comparisonData.spendCount
           ),
           averageSpend: calculateChange(yesterdayAvgSpend, comparisonAvgSpend),
           activeCards: calculateChange(
