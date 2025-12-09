@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useStats } from "@/hooks/useDashboardStats"
 import { usePercentChange } from "@/hooks/usePercentChange"
+import { useAlltimePercentChange } from "@/hooks/useAlltimePercentChange"
 import { SpendHistogram } from "@/components/spendHistogram"
 import { SpendHistogramAll } from "@/components/spendHistogramAll"
 import { CumulativeSpendGraph } from "@/components/cumulativeSpendHistogramAll"
@@ -35,6 +36,7 @@ export default function Dashboard() {
   const { changes: dailyChanges } = usePercentChange(1)
   const { changes: weeklyChanges } = usePercentChange(7)
   const { changes: monthlyChanges } = usePercentChange(30)
+  const { changes: alltimeChanges } = useAlltimePercentChange()
 
   const changesByPeriod: Record<
     TimePeriod,
@@ -43,7 +45,7 @@ export default function Dashboard() {
     "24h": dailyChanges,
     "7d": weeklyChanges,
     "30d": monthlyChanges,
-    all: null
+    all: alltimeChanges
   }
 
   const activeChanges = changesByPeriod[timePeriod]
