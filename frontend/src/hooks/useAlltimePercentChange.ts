@@ -108,12 +108,10 @@ export function useAlltimePercentChange(): PercentChangeResponse {
         const yesterdayStr = formatDate(yesterday)
         const dayBeforeYesterdayStr = formatDate(dayBeforeYesterday)
 
-        // Fetch both dates from the API
-        const apiUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://avici-public-dashboard-production-0130.up.railway.app"
-        
+        // Fetch both dates from the frontend API wrapper
         const [yesterdayResponse, dayBeforeYesterdayResponse] = await Promise.all([
-          fetch(`${apiUrl}/api/daily-alltime-stats?date=${yesterdayStr}`),
-          fetch(`${apiUrl}/api/daily-alltime-stats?date=${dayBeforeYesterdayStr}`)
+          fetch(`/api/dashboard/daily-alltime-stats?date=${yesterdayStr}`),
+          fetch(`/api/dashboard/daily-alltime-stats?date=${dayBeforeYesterdayStr}`)
         ])
 
         if (!yesterdayResponse.ok || !dayBeforeYesterdayResponse.ok) {
