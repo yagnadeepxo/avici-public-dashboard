@@ -53,8 +53,14 @@ export const useTotalCardSpendAll = (
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["totalCardSpendAll", timeFrame, timeStart, timeEnd || "default"],
     queryFn: async () => {
-      // Use provided timeEnd or current date
-      const endDate = timeEnd || new Date().toISOString()
+      // Use provided timeEnd or yesterday at end of day
+      let endDate = timeEnd
+      if (!endDate) {
+        const yesterday = new Date()
+        yesterday.setDate(yesterday.getDate() - 1)
+        yesterday.setHours(23, 59, 59, 999)
+        endDate = yesterday.toISOString()
+      }
       const cacheKey = `totalCardSpendAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
