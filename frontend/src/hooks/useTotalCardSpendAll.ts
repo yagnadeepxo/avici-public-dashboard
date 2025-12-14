@@ -53,22 +53,33 @@ export const useTotalCardSpendAll = (
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["totalCardSpendAll", timeFrame, timeStart, timeEnd || "default"],
     queryFn: async () => {
-      // Use provided timeEnd or yesterday at end of day
+      // Use provided timeEnd or yesterday at end of day (normalized to UTC day boundaries)
       let endDate = timeEnd
       if (!endDate) {
-        const yesterday = new Date()
-        yesterday.setDate(yesterday.getDate() - 1)
-        yesterday.setHours(23, 59, 59, 999)
+        const now = new Date()
+        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+        const yesterday = new Date(today)
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+        yesterday.setUTCHours(23, 59, 59, 999)
         endDate = yesterday.toISOString()
       }
-      const cacheKey = `totalCardSpendAll:${timeFrame}:${timeStart}:${timeEnd ? timeEnd : "auto"}`
+      
+      // Normalize timeStart to start of day (00:00:00.000 UTC) for consistency
+      const startDate = new Date(timeStart)
+      const normalizedTimeStart = new Date(Date.UTC(
+        startDate.getUTCFullYear(),
+        startDate.getUTCMonth(),
+        startDate.getUTCDate(),
+        0, 0, 0, 0
+      )).toISOString()
+      const cacheKey = `totalCardSpendAll:${timeFrame}:${normalizedTimeStart}:${endDate}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached
       }
       const params = new URLSearchParams({
         timeFrame,
-        timeStart,
+        timeStart: normalizedTimeStart,
         timeEnd: endDate,
       })
       const res = await fetch(

@@ -53,12 +53,21 @@ export const useSpendVolumeDynamic = (
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["spendVolumeDynamic", timeFrame, daysBack],
     queryFn: async () => {
-      // Set end date to yesterday at end of day
-      const yesterday = new Date()
-      yesterday.setDate(yesterday.getDate() - 1)
-      yesterday.setHours(23, 59, 59, 999)
+      // Normalize dates to UTC day boundaries for consistency
+      const now = new Date()
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+      
+      // End date: yesterday at end of day (23:59:59.999 UTC)
+      const yesterday = new Date(today)
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+      yesterday.setUTCHours(23, 59, 59, 999)
       const timeEnd = yesterday.toISOString()
-      const timeStart = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
+      
+      // Start date: (yesterday - daysBack) at start of day (00:00:00.000 UTC)
+      const startDate = new Date(yesterday)
+      startDate.setUTCDate(startDate.getUTCDate() - daysBack)
+      startDate.setUTCHours(0, 0, 0, 0)
+      const timeStart = startDate.toISOString()
 
       const cacheKey = `spendVolumeDynamic:${timeFrame}:${daysBack}`
       const cached = getCache<UserStatsResponse>(cacheKey)
