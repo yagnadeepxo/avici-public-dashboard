@@ -63,9 +63,11 @@ export const useSpendVolumeDynamic = (
       yesterday.setUTCHours(23, 59, 59, 999)
       const timeEnd = yesterday.toISOString()
       
-      // Start date: (yesterday - daysBack) at start of day (00:00:00.000 UTC)
+      // Start date: include exactly `daysBack` days ending yesterday.
+      // Subtract (daysBack - 1) so 7d -> 7 bars, 30d -> 30 bars.
       const startDate = new Date(yesterday)
-      startDate.setUTCDate(startDate.getUTCDate() - daysBack)
+      const offsetDays = Math.max(daysBack - 1, 0)
+      startDate.setUTCDate(startDate.getUTCDate() - offsetDays)
       startDate.setUTCHours(0, 0, 0, 0)
       const timeStart = startDate.toISOString()
 
