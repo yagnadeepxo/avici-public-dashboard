@@ -62,6 +62,16 @@ export default function Dashboard() {
     setIsPasscodeValidated(validated)
   }, [])
 
+  // Auto-refresh page every 6 minutes
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      window.location.reload()
+    }, 6 * 60 * 1000) // 6 minutes in milliseconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval)
+  }, [])
+
   const handlePasscodeSuccess = () => {
     setIsPasscodeValidated(true)
   }
