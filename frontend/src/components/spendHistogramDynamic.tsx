@@ -24,10 +24,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
   if (loading) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-muted-foreground"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <CardContent className="p-6 text-center text-sm text-muted-foreground">
           Loading daily spend data...
         </CardContent>
       </Card>
@@ -37,10 +34,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
   if (error) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-red-500"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <CardContent className="p-6 text-center text-sm text-red-500">
           Error: {error}
         </CardContent>
       </Card>
@@ -59,10 +53,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p 
-          className="text-sm text-muted-foreground mb-2"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <p className="text-sm text-muted-foreground mb-2">
           Daily Spend Volume (Last {daysBack} Days)
         </p>
         <div className="w-full h-[300px]">
@@ -87,9 +78,6 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
-                contentStyle={{ color: "#000" }}
-                labelStyle={{ color: "#000" }}
-                itemStyle={{ color: "#000" }}
                 formatter={(val: number) => [
                   `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                   "Daily Spend",

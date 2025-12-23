@@ -19,10 +19,7 @@ export function CumulativeSpendGraph() {
   if (loading) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-muted-foreground"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <CardContent className="p-6 text-center text-sm text-muted-foreground">
           Loading cumulative spend data...
         </CardContent>
       </Card>
@@ -32,10 +29,7 @@ export function CumulativeSpendGraph() {
   if (error) {
     return (
       <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-red-500"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <CardContent className="p-6 text-center text-sm text-red-500">
           Error: {error}
         </CardContent>
       </Card>
@@ -59,10 +53,7 @@ export function CumulativeSpendGraph() {
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p 
-          className="text-sm text-muted-foreground mb-2"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
+        <p className="text-sm text-muted-foreground mb-2">
           Cumulative Spend Over Time
         </p>
         <div className="w-full h-[300px]">

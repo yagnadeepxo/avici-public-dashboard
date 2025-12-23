@@ -18,10 +18,7 @@ export function CumulativeSpendHour() {
 	if (loading) {
 		return (
 			<Card className="border border-border bg-background">
-				<CardContent 
-					className="p-6 text-center text-sm text-muted-foreground"
-					style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-				>
+				<CardContent className="p-6 text-center text-sm text-muted-foreground">
 					Loading cumulative spend data...
 				</CardContent>
 			</Card>
@@ -31,10 +28,7 @@ export function CumulativeSpendHour() {
 	if (error) {
 		return (
 			<Card className="border border-border bg-background">
-				<CardContent 
-					className="p-6 text-center text-sm text-red-500"
-					style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-				>
+				<CardContent className="p-6 text-center text-sm text-red-500">
 					Error: {error}
 				</CardContent>
 			</Card>
@@ -54,13 +48,10 @@ export function CumulativeSpendHour() {
 
 	return (
 		<Card className="border border-border bg-background">
-		<CardContent className="p-4">
-			<p 
-				className="text-sm text-muted-foreground mb-2"
-				style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-			>
-				Cumulative Spend (Last 24 Hours)
-			</p>
+			<CardContent className="p-4">
+				<p className="text-sm text-muted-foreground mb-2">
+					Cumulative Spend (Last 24 Hours)
+				</p>
 				<div className="w-full h-[300px]">
 					<ResponsiveContainer width="100%" height="100%">
 						<ComposedChart data={cumulativeSeries}>
