@@ -16,8 +16,8 @@ export function StatCard({ label, value, change, showChange }: StatCardProps) {
   const isNegative = change && change < 0
 
   return (
-    <Card className="border border-border bg-background flex-1 flex flex-col py-2">
-      <CardContent className="p-2 flex-1 flex flex-col justify-between">
+    <Card className="border border-border bg-background md:flex-1 flex flex-col py-2">
+      <CardContent className="p-2 md:flex-1 flex flex-col justify-between">
         <p 
           className="text-[10px] text-muted-foreground mb-0.5"
           style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}

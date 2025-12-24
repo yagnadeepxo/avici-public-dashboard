@@ -166,9 +166,9 @@ export default function Dashboard() {
 
             {data && (
               <>
-                <div className="flex gap-3 h-[calc(100vh-220px)] overflow-hidden">
-                  {/* Left Column - All 6 Cards Stacked (30%) */}
-                  <div className="w-[30%] flex flex-col gap-1 min-h-0">
+                <div className="flex flex-col md:flex-row gap-3 md:h-[calc(100vh-220px)] overflow-hidden">
+                  {/* Left Column - All 6 Cards Stacked (30% on desktop, full width on mobile) */}
+                  <div className="w-full md:w-[30%] flex flex-col gap-1 md:min-h-0">
                     <ShareableStatCard
                       label="Total Spends"
                       value={`$${(data.totalSpends / 100).toLocaleString('en-US')}`}
@@ -225,14 +225,14 @@ export default function Dashboard() {
                     />
                   </div>
                   
-                  {/* Right Column - Graphs Stacked (70%) */}
-                  <div className="w-[70%] flex flex-col gap-3 min-h-0">
+                  {/* Right Column - Graphs Stacked (70% on desktop, full width on mobile) */}
+                  <div className="w-full md:w-[70%] flex flex-col gap-3 md:min-h-0">
                     {timePeriod === "24h" && (
                       <>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <SpendHistogram />
                         </div>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <CumulativeSpendHour />
                         </div>
                       </>
@@ -240,10 +240,10 @@ export default function Dashboard() {
 
                     {timePeriod === "7d" && (
                       <>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <SpendHistogramDynamic daysBack={7} />
                         </div>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <CumulativeSpendDynamic daysBack={7} />
                         </div>
                       </>
@@ -251,10 +251,10 @@ export default function Dashboard() {
 
                     {timePeriod === "30d" && (
                       <>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <SpendHistogramDynamic daysBack={30} />
                         </div>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <CumulativeSpendDynamic daysBack={30} />
                         </div>
                       </>
@@ -262,10 +262,10 @@ export default function Dashboard() {
 
                     {timePeriod === "all" && (
                       <>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <SpendHistogramAll />
                         </div>
-                        <div className="flex-1 min-h-0 flex flex-col">
+                        <div className="md:flex-1 md:min-h-0 flex flex-col">
                           <CumulativeSpendGraph />
                         </div>
                       </>

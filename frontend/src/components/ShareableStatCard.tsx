@@ -37,7 +37,7 @@ export function ShareableStatCard({
   }, [label, value, change, timePeriod, onShare, customBackgroundImage])
 
   return (
-    <div className="relative group flex-1 flex flex-col">
+    <div className="relative group md:flex-1 flex flex-col">
       <StatCard
         label={label}
         value={value}
