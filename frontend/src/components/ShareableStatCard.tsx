@@ -37,7 +37,7 @@ export function ShareableStatCard({
   }, [label, value, change, timePeriod, onShare, customBackgroundImage])
 
   return (
-    <div className="relative group md:flex-1 flex flex-col">
+    <div className="relative group">
       <StatCard
         label={label}
         value={value}
@@ -48,14 +48,14 @@ export function ShareableStatCard({
         onClick={handleShare}
         variant="ghost"
         size="icon"
-        className="absolute top-1.5 right-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-5 w-5"
+        className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-7 w-7"
         disabled={isPreparingShare}
         title="Share this card"
       >
         {isPreparingShare ? (
-          <Loader2 className="w-3 h-3 animate-spin" />
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
         ) : (
-          <Share2 className="w-3 h-3" />
+          <Share2 className="w-3.5 h-3.5" />
         )}
       </Button>
     </div>

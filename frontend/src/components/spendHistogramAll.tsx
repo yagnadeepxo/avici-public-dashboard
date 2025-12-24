@@ -51,17 +51,17 @@ export function SpendHistogramAll() {
     })) || []
 
   return (
-    <Card className="border border-border bg-background md:h-full flex flex-col">
-      <CardContent className="p-4 md:flex-1 flex flex-col md:min-h-0">
+    <Card className="border border-border bg-background">
+      <CardContent className="p-4">
         <p 
           className="text-sm text-muted-foreground mb-2"
           style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
         >
           Daily Spend Volume
         </p>
-        <div className="w-full h-[300px] md:flex-1 md:min-h-0">
+        <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={dailyData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
+            <ComposedChart data={dailyData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"

@@ -166,112 +166,103 @@ export default function Dashboard() {
 
             {data && (
               <>
-                <div className="flex flex-col md:flex-row gap-3 md:h-[calc(100vh-220px)] overflow-hidden">
-                  {/* Left Column - All 6 Cards Stacked (30% on desktop, full width on mobile) */}
-                  <div className="w-full md:w-[30%] flex flex-col gap-1 md:min-h-0">
-                    <ShareableStatCard
-                      label="Total Spends"
-                      value={`$${(data.totalSpends / 100).toLocaleString('en-US')}`}
-                      change={activeChanges?.totalSpends}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                    <ShareableStatCard
-                      label="Total Transactions"
-                      value={data.totalTransactions.toLocaleString('en-US')}
-                      change={activeChanges?.totalTransactions}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                    <ShareableStatCard
-                      label="Total Spend Transactions"
-                      value={data.spendTransactionCount.toLocaleString('en-US')}
-                      change={activeChanges?.totalSpendTransactions}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                    <ShareableStatCard
-                      label="Total Credit Created"
-                      value={`$${(data.totalCreditCreated / 100).toLocaleString('en-US')}`}
-                      change={activeChanges?.totalCreditCreated}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                    <ShareableStatCard
-                      label="Average Spend"
-                      value={`$${(data.averageSpend / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                      change={activeChanges?.averageSpend}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                    <ShareableStatCard
-                      label="Active Users"
-                      value={data.uniqueUsers.toLocaleString('en-US')}
-                      change={activeChanges?.uniqueUsers}
-                      showChange={shouldShowChanges}
-                      timePeriod={timePeriod}
-                      onShare={handleCardShare}
-                      isPreparingShare={isGeneratingPreview}
-                    />
-                  </div>
-                  
-                  {/* Right Column - Graphs Stacked (70% on desktop, full width on mobile) */}
-                  <div className="w-full md:w-[70%] flex flex-col gap-3 md:min-h-0">
-                    {timePeriod === "24h" && (
-                      <>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <SpendHistogram />
-                        </div>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <CumulativeSpendHour />
-                        </div>
-                      </>
-                    )}
-
-                    {timePeriod === "7d" && (
-                      <>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <SpendHistogramDynamic daysBack={7} />
-                        </div>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <CumulativeSpendDynamic daysBack={7} />
-                        </div>
-                      </>
-                    )}
-
-                    {timePeriod === "30d" && (
-                      <>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <SpendHistogramDynamic daysBack={30} />
-                        </div>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <CumulativeSpendDynamic daysBack={30} />
-                        </div>
-                      </>
-                    )}
-
-                    {timePeriod === "all" && (
-                      <>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <SpendHistogramAll />
-                        </div>
-                        <div className="md:flex-1 md:min-h-0 flex flex-col">
-                          <CumulativeSpendGraph />
-                        </div>
-                      </>
-                    )}
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <ShareableStatCard
+                    label="Total Spends"
+                    value={`$${(data.totalSpends / 100).toLocaleString('en-US')}`}
+                    change={activeChanges?.totalSpends}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
+                    label="Total Transactions"
+                    value={data.totalTransactions.toLocaleString('en-US')}
+                    change={activeChanges?.totalTransactions}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
+                    label="Total Spend Transactions"
+                    value={data.spendTransactionCount.toLocaleString('en-US')}
+                    change={activeChanges?.totalSpendTransactions}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
+                    label="Total Credit Created"
+                    value={`$${(data.totalCreditCreated / 100).toLocaleString('en-US')}`}
+                    change={activeChanges?.totalCreditCreated}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
+                    label="Average Spend"
+                    value={`$${(data.averageSpend / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    change={activeChanges?.averageSpend}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
+                  <ShareableStatCard
+                    label="Active Users"
+                    value={data.uniqueUsers.toLocaleString('en-US')}
+                    change={activeChanges?.uniqueUsers}
+                    showChange={shouldShowChanges}
+                    timePeriod={timePeriod}
+                    onShare={handleCardShare}
+                    isPreparingShare={isGeneratingPreview}
+                  />
                 </div>
+
+                {timePeriod === "24h" && (
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
+                    <SpendHistogram />
+                    <CumulativeSpendHour />
+                    </div>
+                   
+                  </div>
+                )}
+
+                {timePeriod === "7d" && (
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
+                    <SpendHistogramDynamic daysBack={7} />
+                    <CumulativeSpendDynamic daysBack={7} />
+                    </div>
+                    
+                  </div>
+                )}
+
+                {timePeriod === "30d" && (
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
+                    <SpendHistogramDynamic daysBack={30} />
+                    <CumulativeSpendDynamic daysBack={30} />
+                    </div>
+                    
+                  </div>
+                )}
+
+                {timePeriod === "all" && (
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
+                      <SpendHistogramAll />
+                      <CumulativeSpendGraph />
+                    </div>
+                    
+                  </div>
+                )}
+
               </>
             )}
             
