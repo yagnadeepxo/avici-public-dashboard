@@ -39,7 +39,7 @@ export function CumulativeSpendHour() {
 	const cumulativeSeries = (data || []).map((d) => {
 		running += d.spend
 		return { 
-			hour: d.hour, 
+			day: d.day, 
 			cumulativeSpend: running,
 			index: d.index,
 			timestamp: d.timestamp
@@ -50,7 +50,7 @@ export function CumulativeSpendHour() {
 		<Card className="border border-border bg-background">
 			<CardContent className="p-4">
 				<p className="text-sm text-muted-foreground mb-2">
-					Cumulative Spend (Last 24 Hours)
+					Cumulative Spend (Last 24 Days)
 				</p>
 				<div className="w-full h-[300px]">
 					<ResponsiveContainer width="100%" height="100%">
@@ -61,14 +61,10 @@ export function CumulativeSpendHour() {
 								vertical={false}
 							/>
 							<XAxis
-								dataKey="index"
+								dataKey="day"
 								tickLine={false}
 								axisLine={false}
 								tick={{ fill: "#888", fontSize: 12 }}
-								tickFormatter={(value, index) => {
-									const point = cumulativeSeries[index]
-									return point ? `${point.hour}` : `${value}`
-								}}
 							/>
 							<YAxis
 								tickLine={false}
@@ -86,12 +82,13 @@ export function CumulativeSpendHour() {
 									const point = payload?.[0]?.payload
 									if (point?.timestamp) {
 										const date = new Date(point.timestamp)
-										const hour = date.getUTCHours()
-										const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
-										const day = date.getUTCDate()
-										return `${hour}:00 UTC (${month} ${day})`
+										return date.toLocaleDateString("en-US", {
+											month: "short",
+											day: "numeric",
+											year: "numeric",
+										})
 									}
-									return `${label}:00 UTC`
+									return point?.day || label
 								}}
 							/>
 							<Line type="monotone" dataKey="cumulativeSpend" stroke="#000" strokeWidth={1.8} dot={false} />

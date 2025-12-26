@@ -41,20 +41,126 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
     )
   }
 
-  const dailyData =
-    data?.graphData?.map((item) => ({
-      date: new Date(item.timestamp).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      dailySpendUSD: item.totalSpend / 100, // convert cents → dollars
-    })) || []
+  // For 30d and 7d, aggregate into non-overlapping periods
+  // For other timeframes, show daily data
+  const shouldUsePeriodAggregation = daysBack === 30 || daysBack === 7
+  
+  let dailyData: Array<{ date: string; dailySpendUSD: number }> = []
+  
+  if (shouldUsePeriodAggregation && data?.graphData) {
+    // Sort data by timestamp (oldest first)
+    const sortedData = [...data.graphData].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    )
+    
+    if (daysBack === 30) {
+      // For 30d: Group by month (Jan, Feb, Mar, etc.) starting from January
+      const now = new Date()
+      const currentYear = now.getUTCFullYear()
+      const currentMonth = now.getUTCMonth()
+      
+      const monthlyData: Map<string, { month: string; sum: number; isCurrent: boolean }> = new Map()
+      
+      sortedData.forEach((item) => {
+        const date = new Date(item.timestamp)
+        const monthKey = `${date.getUTCFullYear()}-${date.getUTCMonth()}`
+        const monthName = date.toLocaleDateString("en-US", { month: "short" })
+        const isCurrent = date.getUTCFullYear() === currentYear && date.getUTCMonth() === currentMonth
+        
+        if (!monthlyData.has(monthKey)) {
+          monthlyData.set(monthKey, { month: monthName, sum: 0, isCurrent })
+        }
+        const monthData = monthlyData.get(monthKey)!
+        monthData.sum += item.totalSpend / 100 // convert cents → dollars
+        monthData.isCurrent = isCurrent // Update in case of multiple entries
+      })
+      
+      // Convert to array and sort by month (chronologically)
+      dailyData = Array.from(monthlyData.entries())
+        .sort((a, b) => {
+          const [yearA, monthA] = a[0].split('-').map(Number)
+          const [yearB, monthB] = b[0].split('-').map(Number)
+          if (yearA !== yearB) return yearA - yearB
+          return monthA - monthB
+        })
+        .map(([_, data], index, array) => ({
+          date: index === array.length - 1 && data.isCurrent ? `${data.month} (ongoing)` : data.month,
+          dailySpendUSD: data.sum,
+        }))
+    } else if (daysBack === 7) {
+      // For 7d: Group into 7-day periods starting from Sunday
+      if (sortedData.length === 0) {
+        dailyData = []
+      } else {
+        // Find the first Sunday in the data
+        let firstSundayIndex = -1
+        for (let i = 0; i < sortedData.length; i++) {
+          const date = new Date(sortedData[i].timestamp)
+          const dayOfWeek = date.getUTCDay() // 0 = Sunday, 1 = Monday, etc.
+          if (dayOfWeek === 0) {
+            firstSundayIndex = i
+            break
+          }
+        }
+        
+        // If no Sunday found, start from the first data point
+        const startIndex = firstSundayIndex >= 0 ? firstSundayIndex : 0
+        
+        const periods: Array<{ startDate: Date; endDate: Date; sum: number }> = []
+        
+        // Process data starting from Sunday, grouping into 7-day periods
+        for (let i = startIndex; i < sortedData.length; i += 7) {
+          let periodSum = 0
+          let periodStart = new Date(sortedData[i].timestamp)
+          let periodEnd = periodStart
+          
+          // Sum up available days (even if less than 7)
+          const remainingDays = Math.min(7, sortedData.length - i)
+          for (let j = 0; j < remainingDays; j++) {
+            periodSum += sortedData[i + j].totalSpend / 100 // convert cents → dollars
+            periodEnd = new Date(sortedData[i + j].timestamp)
+          }
+          
+          periods.push({
+            startDate: periodStart,
+            endDate: periodEnd,
+            sum: periodSum,
+          })
+        }
+        
+        dailyData = periods.map((period) => ({
+          date: `${period.startDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })} - ${period.endDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}`,
+          dailySpendUSD: period.sum,
+        }))
+      }
+    }
+  } else {
+    // For other timeframes, show daily data as before
+    dailyData =
+      data?.graphData?.map((item) => ({
+        date: new Date(item.timestamp).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        dailySpendUSD: item.totalSpend / 100, // convert cents → dollars
+      })) || []
+  }
 
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground mb-2">
-          Daily Spend Volume (Last {daysBack} Days)
+          {daysBack === 30 
+            ? `Monthly Spend Volume` 
+            : daysBack === 7
+            ? `7D Period Spend Volume`
+            : `Daily Spend Volume (Last ${daysBack} Days)`}
         </p>
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -80,7 +186,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
                 formatter={(val: number) => [
                   `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                  "Daily Spend",
+                  daysBack === 30 ? "Monthly Volume" : daysBack === 7 ? "7D Period Volume" : "Daily Spend",
                 ]}
               />
               {/* Dark grey bars for daily spend */}

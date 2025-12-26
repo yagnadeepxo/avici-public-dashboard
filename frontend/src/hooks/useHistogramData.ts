@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
 interface HistogramDataPoint {
-  hour: number
+  day: string
   spend: number
   index: number
   timestamp: string
@@ -42,16 +42,21 @@ export function useHistogramData() {
   const { data, isLoading, error } = useQuery<HistogramDataPoint[]>({
     queryKey: ['histogramData'],
     queryFn: async () => {
-      // Rolling 24-hour window: fetch from yesterday to tomorrow to ensure we have latest 24 hours
+      // Fetch last 24 days of daily data
       const now = new Date()
-      // Start from 25 hours ago (yesterday minus 1 hour to ensure we have enough data)
-      const start = new Date(now.getTime() - 25 * 60 * 60 * 1000)
-      // End at tomorrow to ensure we have the latest data
-      const tomorrow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0, 0))
-      const end = tomorrow
-
-      const timeStart = start.toISOString()
-      const timeEnd = end.toISOString()
+      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+      
+      // End date: yesterday at end of day (23:59:59.999 UTC)
+      const yesterday = new Date(today)
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+      yesterday.setUTCHours(23, 59, 59, 999)
+      const timeEnd = yesterday.toISOString()
+      
+      // Start date: 24 days before yesterday (to get 24 complete days)
+      const startDate = new Date(yesterday)
+      startDate.setUTCDate(startDate.getUTCDate() - 23) // 24 days total (including yesterday)
+      startDate.setUTCHours(0, 0, 0, 0)
+      const timeStart = startDate.toISOString()
 
       const cacheKey = `histogramData:${timeStart}:${timeEnd}`
       const cached = getCache<HistogramDataPoint[]>(cacheKey)
@@ -60,7 +65,7 @@ export function useHistogramData() {
       }
 
       const params = new URLSearchParams({
-        timeFrame: "1h",
+        timeFrame: "24h", // Daily data
         timeStart,
         timeEnd,
       })
@@ -68,41 +73,43 @@ export function useHistogramData() {
         `/api/dashboard/users-stats?${params.toString()}`
       )
       if (!response.ok) {
-        throw new Error('Failed to fetch hourly stats')
+        throw new Error('Failed to fetch daily stats')
       }
 
       const raw = await response.json()
       const graphData: Array<{
         timestamp: string
-        periodStart: string
         totalSpend: number
       }> = raw?.graphData || []
 
-      // Sort by periodStart to ensure chronological order (oldest first)
+      // Sort by timestamp to ensure chronological order (oldest first)
       const sortedData = [...graphData].sort((a, b) => {
-        const dateA = new Date(a.periodStart || a.timestamp).getTime()
-        const dateB = new Date(b.periodStart || b.timestamp).getTime()
+        const dateA = new Date(a.timestamp).getTime()
+        const dateB = new Date(b.timestamp).getTime()
         return dateA - dateB
       })
 
-      // Take only the latest 24 data points (rolling 24-hour window)
+      // Take only the latest 24 data points (last 24 days)
       const latest24 = sortedData.slice(-24)
 
-      // Map to HistogramDataPoint format with actual UTC hour, spend in USD, index, and timestamp
-      const hourly = latest24.map((pt, idx) => {
-        const periodStart = pt.periodStart || pt.timestamp
-        const hour = new Date(periodStart).getUTCHours()
+      // Map to HistogramDataPoint format with day label, spend in USD, index, and timestamp
+      const daily = latest24.map((pt, idx) => {
+        const date = new Date(pt.timestamp)
+        const dayLabel = date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        })
         const spendUsd = (pt.totalSpend || 0) / 100
         return { 
-          hour, 
+          day: dayLabel, 
           spend: spendUsd,
           index: idx, // 0-23 for X-axis ordering
-          timestamp: periodStart
+          timestamp: pt.timestamp
         }
       })
 
-      setCache(cacheKey, hourly)
-      return hourly
+      setCache(cacheKey, daily)
+      return daily
     },
     staleTime: 1800000, // 30 minutes cache - data is fresh for 30 minutes
     gcTime: 3600000, // 1 hour - keep in cache for 1 hour

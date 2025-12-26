@@ -57,19 +57,33 @@ export const useSpendVolumeDynamic = (
       const now = new Date()
       const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
       
-      // End date: yesterday at end of day (23:59:59.999 UTC)
-      const yesterday = new Date(today)
-      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-      yesterday.setUTCHours(23, 59, 59, 999)
-      const timeEnd = yesterday.toISOString()
+      let timeStart: string
+      let timeEnd: string
       
-      // Start date: include exactly `daysBack` days ending yesterday.
-      // Subtract (daysBack - 1) so 7d -> 7 bars, 30d -> 30 bars.
-      const startDate = new Date(yesterday)
-      const offsetDays = Math.max(daysBack - 1, 0)
-      startDate.setUTCDate(startDate.getUTCDate() - offsetDays)
-      startDate.setUTCHours(0, 0, 0, 0)
-      const timeStart = startDate.toISOString()
+      if (daysBack === 30) {
+        // For 30d: Start from January 1st of current year, end at today (to include current month even if incomplete)
+        const januaryFirst = new Date(Date.UTC(now.getUTCFullYear(), 0, 1, 0, 0, 0, 0))
+        timeStart = januaryFirst.toISOString()
+        timeEnd = today.toISOString() // Include today for current month
+      } else if (daysBack === 7) {
+        // For 7d: Fetch enough data and include up to today (to show incomplete periods)
+        const startDate = new Date(today)
+        startDate.setUTCDate(startDate.getUTCDate() - 180) // Fetch 180 days back
+        timeStart = startDate.toISOString()
+        timeEnd = today.toISOString() // Include today for incomplete periods
+      } else {
+        // For other timeframes: yesterday at end of day (23:59:59.999 UTC)
+        const yesterday = new Date(today)
+        yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+        yesterday.setUTCHours(23, 59, 59, 999)
+        timeEnd = yesterday.toISOString()
+        
+        const startDate = new Date(yesterday)
+        const offsetDays = Math.max(daysBack - 1, 0)
+        startDate.setUTCDate(startDate.getUTCDate() - offsetDays)
+        startDate.setUTCHours(0, 0, 0, 0)
+        timeStart = startDate.toISOString()
+      }
 
       const cacheKey = `spendVolumeDynamic:${timeFrame}:${daysBack}`
       const cached = getCache<UserStatsResponse>(cacheKey)

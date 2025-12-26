@@ -19,7 +19,7 @@ export function SpendHistogram() {
     return (
       <Card className="border border-border bg-background">
         <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading hourly spend data...
+          Loading daily spend data...
         </CardContent>
       </Card>
     )
@@ -39,7 +39,7 @@ export function SpendHistogram() {
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground mb-2">
-          Hourly Spend Volume (Last 24 Hours)
+          Daily Spend Volume (Last 24 Days)
         </p>
         <div className="w-full h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -50,14 +50,10 @@ export function SpendHistogram() {
                 vertical={false}
               />
               <XAxis
-                dataKey="index"
+                dataKey="day"
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "#888", fontSize: 12 }}
-                tickFormatter={(value, index) => {
-                  const point = data[index]
-                  return point ? `${point.hour}` : `${value}`
-                }}
               />
               <YAxis
                 tickLine={false}
@@ -72,21 +68,19 @@ export function SpendHistogram() {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}`,
-                  "Hourly Spend",
+                  "Daily Spend",
                 ]}
                 labelFormatter={(label, payload) => {
                   const point = payload?.[0]?.payload
                   if (point?.timestamp) {
                     const date = new Date(point.timestamp)
-                    const hour = date.getUTCHours()
-                    const month = date.toLocaleString("en-US", {
+                    return date.toLocaleDateString("en-US", {
                       month: "short",
-                      timeZone: "UTC",
+                      day: "numeric",
+                      year: "numeric",
                     })
-                    const day = date.getUTCDate()
-                    return `${hour}:00 UTC (${month} ${day})`
                   }
-                  return `${label}:00 UTC`
+                  return point?.day || label
                 }}
               />
               <Bar
