@@ -112,7 +112,7 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
         // If no Sunday found, start from the first data point
         const startIndex = firstSundayIndex >= 0 ? firstSundayIndex : 0
         
-        const periods: Array<{ startDate: Date; endDate: Date; sum: number }> = []
+        const periods: Array<{ startDate: Date; endDate: Date; sum: number; isComplete: boolean }> = []
         
         // Process data starting from Sunday, grouping into 7-day periods
         for (let i = startIndex; i < sortedData.length; i += 7) {
@@ -122,6 +122,8 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
           
           // Sum up available days (even if less than 7)
           const remainingDays = Math.min(7, sortedData.length - i)
+          const isComplete = remainingDays === 7
+          
           for (let j = 0; j < remainingDays; j++) {
             periodSum += sortedData[i + j].totalSpend / 100 // convert cents → dollars
             periodEnd = new Date(sortedData[i + j].timestamp)
@@ -131,21 +133,25 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
             startDate: periodStart,
             endDate: periodEnd,
             sum: periodSum,
+            isComplete,
           })
         }
         
         // Calculate cumulative from period sums
         let runningTotal = 0
-        cumulativeData = periods.map((period) => {
+        cumulativeData = periods.map((period, index, array) => {
           runningTotal += period.sum
+          const isLast = index === array.length - 1
+          const dateLabel = `${period.startDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })} - ${period.endDate.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}`
+          
           return {
-            date: `${period.startDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })} - ${period.endDate.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}`,
+            date: isLast && !period.isComplete ? `${dateLabel} (ongoing)` : dateLabel,
             cumulativeSpendUSD: runningTotal,
           }
         })
