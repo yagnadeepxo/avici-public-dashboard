@@ -110,6 +110,7 @@ export const useSpendVolumeDynamic = (
     gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false, // Don't refetch if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchInterval: 6 * 60 * 1000,
     retry: 1,
   })
 

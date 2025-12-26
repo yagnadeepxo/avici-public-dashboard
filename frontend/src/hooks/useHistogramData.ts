@@ -115,6 +115,7 @@ export function useHistogramData() {
     gcTime: 3600000, // 1 hour - keep in cache for 1 hour
     refetchOnMount: false, // Don't refetch if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus
+    refetchInterval: 6 * 60 * 1000,
     retry: 1,
   })
 

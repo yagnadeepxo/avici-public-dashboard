@@ -92,144 +92,258 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
         setLoading(true)
         setError(null)
 
-        // Calculate dates in UTC to match API format:
-        // - For 24h/all (daysBack=1): Compare yesterday vs day before yesterday
-        // - For 7d (daysBack=7): Compare yesterday vs 7 days before yesterday
-        // - For 30d (daysBack=30): Compare yesterday vs 30 days before yesterday
         const now = new Date()
         const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
         
         const yesterday = new Date(today)
         yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-        
-        // Calculate comparison date from yesterday, not from today
-        const comparisonDate = new Date(yesterday)
-        comparisonDate.setUTCDate(comparisonDate.getUTCDate() - daysBack)
 
-        // We need to fetch data from comparisonDate to today (to include full day of yesterday)
-        // timeStart should be the start of comparisonDate
-        // timeEnd should be the start of today (which includes all of yesterday)
-        const timeStart = comparisonDate.toISOString()
-        const timeEnd = today.toISOString()
+        if (daysBack === 1) {
+          // For 24h: Compare yesterday vs day before yesterday
+          const comparisonDate = new Date(yesterday)
+          comparisonDate.setUTCDate(comparisonDate.getUTCDate() - 1)
 
-        // Fetch data from the new API wrapper
-        const params = new URLSearchParams({
-          timeFrame: "24h",
-          timeStart,
-          timeEnd,
-        })
-        const response = await fetch(
-          `/api/dashboard/users-stats?${params.toString()}`
-        )
+          const timeStart = comparisonDate.toISOString()
+          const timeEnd = today.toISOString()
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch stats")
+          const params = new URLSearchParams({
+            timeFrame: "24h",
+            timeStart,
+            timeEnd,
+          })
+          const response = await fetch(
+            `/api/dashboard/users-stats?${params.toString()}`
+          )
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch stats")
+          }
+
+          const data: StatsResponse = await response.json()
+
+          if (!data.graphData || data.graphData.length === 0) {
+            setChanges(null)
+            return
+          }
+
+          const formatDateForComparison = (date: Date): string => {
+            const year = date.getUTCFullYear()
+            const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+            const day = String(date.getUTCDate()).padStart(2, "0")
+            return `${year}-${month}-${day}`
+          }
+
+          const yesterdayStr = formatDateForComparison(yesterday)
+          const comparisonStr = formatDateForComparison(comparisonDate)
+
+          const sortedGraphData = [...data.graphData].sort((a, b) => 
+            a.timestamp.localeCompare(b.timestamp)
+          )
+
+          const yesterdayData = sortedGraphData.find((point) => {
+            const pointDate = point.timestamp.split(" ")[0]
+            return pointDate === yesterdayStr
+          })
+
+          const comparisonData = sortedGraphData.find((point) => {
+            const pointDate = point.timestamp.split(" ")[0]
+            return pointDate === comparisonStr
+          })
+
+          if (!yesterdayData || !comparisonData) {
+            setChanges(null)
+            return
+          }
+
+          const calculateChange = (current: number, previous: number): number => {
+            if (previous === 0) return current > 0 ? 100 : 0
+            return ((current - previous) / previous) * 100
+          }
+
+          const yesterdayTotalSpend = parseFloat(yesterdayData.totalSpend)
+          const comparisonTotalSpend = parseFloat(comparisonData.totalSpend)
+          const yesterdayTotalCredit = parseFloat(yesterdayData.totalCredit)
+          const comparisonTotalCredit = parseFloat(comparisonData.totalCredit)
+
+          const yesterdayAvgSpend =
+            yesterdayData.spendCount > 0
+              ? yesterdayTotalSpend / yesterdayData.spendCount
+              : 0
+          const comparisonAvgSpend =
+            comparisonData.spendCount > 0
+              ? comparisonTotalSpend / comparisonData.spendCount
+              : 0
+
+          const percentageChanges: PercentageChanges = {
+            totalSpends: calculateChange(yesterdayTotalSpend, comparisonTotalSpend),
+            totalTransactions: calculateChange(
+              yesterdayData.totalTransactions,
+              comparisonData.totalTransactions
+            ),
+            totalCreditCreated: calculateChange(yesterdayTotalCredit, comparisonTotalCredit),
+            totalSpendTransactions: calculateChange(
+              yesterdayData.spendCount,
+              comparisonData.spendCount
+            ),
+            averageSpend: calculateChange(yesterdayAvgSpend, comparisonAvgSpend),
+            activeCards: calculateChange(
+              yesterdayData.activeCards,
+              comparisonData.activeCards
+            ),
+            uniqueUsers: calculateChange(
+              yesterdayData.activeUsers,
+              comparisonData.activeUsers
+            ),
+          }
+
+          setChanges(percentageChanges)
+          setCache(cacheKey, percentageChanges)
+        } else {
+          // For 7d and 30d: Sum current period and previous period
+          // Current period: yesterday minus daysBack to yesterday
+          // Previous period: (yesterday - daysBack) minus daysBack to (yesterday - daysBack)
+          
+          const currentPeriodEnd = yesterday
+          const currentPeriodStart = new Date(yesterday)
+          currentPeriodStart.setUTCDate(currentPeriodStart.getUTCDate() - daysBack)
+          
+          const previousPeriodEnd = new Date(currentPeriodStart)
+          previousPeriodEnd.setUTCDate(previousPeriodEnd.getUTCDate() - 1)
+          const previousPeriodStart = new Date(previousPeriodEnd)
+          previousPeriodStart.setUTCDate(previousPeriodStart.getUTCDate() - daysBack)
+
+          // Fetch data covering both periods
+          const timeStart = previousPeriodStart.toISOString()
+          const timeEnd = today.toISOString()
+
+          const params = new URLSearchParams({
+            timeFrame: "24h",
+            timeStart,
+            timeEnd,
+          })
+          const response = await fetch(
+            `/api/dashboard/users-stats?${params.toString()}`
+          )
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch stats")
+          }
+
+          const data: StatsResponse = await response.json()
+
+          if (!data.graphData || data.graphData.length === 0) {
+            setChanges(null)
+            return
+          }
+
+          const sortedGraphData = [...data.graphData].sort((a, b) => 
+            a.timestamp.localeCompare(b.timestamp)
+          )
+
+          // Helper to get date string from Date object
+          const formatDate = (date: Date): string => {
+            const year = date.getUTCFullYear()
+            const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+            const day = String(date.getUTCDate()).padStart(2, "0")
+            return `${year}-${month}-${day}`
+          }
+
+          // Filter data points for current period (exclusive start, inclusive end)
+          const currentPeriodData = sortedGraphData.filter((point) => {
+            const pointDate = point.timestamp.split(" ")[0]
+            const pointTime = new Date(point.timestamp)
+            return pointTime > currentPeriodStart && pointTime <= currentPeriodEnd
+          })
+
+          // Filter data points for previous period (exclusive start, inclusive end)
+          const previousPeriodData = sortedGraphData.filter((point) => {
+            const pointDate = point.timestamp.split(" ")[0]
+            const pointTime = new Date(point.timestamp)
+            return pointTime > previousPeriodStart && pointTime <= previousPeriodEnd
+          })
+
+          if (currentPeriodData.length === 0 || previousPeriodData.length === 0) {
+            setChanges(null)
+            return
+          }
+
+          // Sum up metrics for current period
+          const currentSums = currentPeriodData.reduce(
+            (acc, point) => ({
+              totalSpend: acc.totalSpend + parseFloat(point.totalSpend),
+              totalTransactions: acc.totalTransactions + point.totalTransactions,
+              spendCount: acc.spendCount + point.spendCount,
+              totalCredit: acc.totalCredit + parseFloat(point.totalCredit),
+              activeCards: acc.activeCards + point.activeCards,
+              activeUsers: acc.activeUsers + point.activeUsers,
+            }),
+            {
+              totalSpend: 0,
+              totalTransactions: 0,
+              spendCount: 0,
+              totalCredit: 0,
+              activeCards: 0,
+              activeUsers: 0,
+            }
+          )
+
+          // Sum up metrics for previous period
+          const previousSums = previousPeriodData.reduce(
+            (acc, point) => ({
+              totalSpend: acc.totalSpend + parseFloat(point.totalSpend),
+              totalTransactions: acc.totalTransactions + point.totalTransactions,
+              spendCount: acc.spendCount + point.spendCount,
+              totalCredit: acc.totalCredit + parseFloat(point.totalCredit),
+              activeCards: acc.activeCards + point.activeCards,
+              activeUsers: acc.activeUsers + point.activeUsers,
+            }),
+            {
+              totalSpend: 0,
+              totalTransactions: 0,
+              spendCount: 0,
+              totalCredit: 0,
+              activeCards: 0,
+              activeUsers: 0,
+            }
+          )
+
+          // Calculate average spend per transaction
+          const currentAvgSpend =
+            currentSums.spendCount > 0
+              ? currentSums.totalSpend / currentSums.spendCount
+              : 0
+          const previousAvgSpend =
+            previousSums.spendCount > 0
+              ? previousSums.totalSpend / previousSums.spendCount
+              : 0
+
+          const calculateChange = (current: number, previous: number): number => {
+            if (previous === 0) return current > 0 ? 100 : 0
+            return ((current - previous) / previous) * 100
+          }
+
+          const percentageChanges: PercentageChanges = {
+            totalSpends: calculateChange(currentSums.totalSpend, previousSums.totalSpend),
+            totalTransactions: calculateChange(
+              currentSums.totalTransactions,
+              previousSums.totalTransactions
+            ),
+            totalCreditCreated: calculateChange(
+              currentSums.totalCredit,
+              previousSums.totalCredit
+            ),
+            totalSpendTransactions: calculateChange(
+              currentSums.spendCount,
+              previousSums.spendCount
+            ),
+            averageSpend: calculateChange(currentAvgSpend, previousAvgSpend),
+            activeCards: calculateChange(currentSums.activeCards, previousSums.activeCards),
+            uniqueUsers: calculateChange(currentSums.activeUsers, previousSums.activeUsers),
+          }
+
+          setChanges(percentageChanges)
+          setCache(cacheKey, percentageChanges)
         }
-
-        const data: StatsResponse = await response.json()
-
-        if (!data.graphData || data.graphData.length === 0) {
-          setChanges(null)
-          return
-        }
-
-        // Find yesterday's data and comparison date's data
-        // The timestamp in graphData represents the start of that day's period
-        // Format: "2025-11-18 00:00:00+00" means data for Nov 18
-        const formatDateForComparison = (date: Date): string => {
-          // Use UTC date to match API format
-          const year = date.getUTCFullYear()
-          const month = String(date.getUTCMonth() + 1).padStart(2, "0")
-          const day = String(date.getUTCDate()).padStart(2, "0")
-          return `${year}-${month}-${day}`
-        }
-
-        const yesterdayStr = formatDateForComparison(yesterday)
-        const comparisonStr = formatDateForComparison(comparisonDate)
-
-        // Sort graphData by timestamp to ensure correct order
-        const sortedGraphData = [...data.graphData].sort((a, b) => 
-          a.timestamp.localeCompare(b.timestamp)
-        )
-
-        // Find the data points for yesterday and comparison date
-        // The timestamp format is "YYYY-MM-DD HH:mm:ss+TZ"
-        const yesterdayData = sortedGraphData.find((point) => {
-          const pointDate = point.timestamp.split(" ")[0] // Extract date part "YYYY-MM-DD"
-          return pointDate === yesterdayStr
-        })
-
-        const comparisonData = sortedGraphData.find((point) => {
-          const pointDate = point.timestamp.split(" ")[0] // Extract date part "YYYY-MM-DD"
-          return pointDate === comparisonStr
-        })
-
-        if (!yesterdayData || !comparisonData) {
-          setChanges(null)
-          return
-        }
-
-        // Validate we're comparing the right dates (yesterday should be after comparison date)
-        const yesterdayTimestamp = new Date(yesterdayData.timestamp)
-        const comparisonTimestamp = new Date(comparisonData.timestamp)
-        if (yesterdayTimestamp <= comparisonTimestamp) {
-          // Dates are in wrong order, something is wrong
-          setChanges(null)
-          return
-        }
-
-        // Calculate percentage changes
-        const calculateChange = (current: number, previous: number): number => {
-          if (previous === 0) return current > 0 ? 100 : 0
-          return ((current - previous) / previous) * 100
-        }
-
-        // Parse string values to numbers
-        const yesterdayTotalSpend = parseFloat(yesterdayData.totalSpend)
-        const comparisonTotalSpend = parseFloat(comparisonData.totalSpend)
-        const yesterdayTotalCredit = parseFloat(yesterdayData.totalCredit)
-        const comparisonTotalCredit = parseFloat(comparisonData.totalCredit)
-
-        // Calculate average spend
-        const yesterdayAvgSpend =
-          yesterdayData.spendCount > 0
-            ? yesterdayTotalSpend / yesterdayData.spendCount
-            : 0
-        const comparisonAvgSpend =
-          comparisonData.spendCount > 0
-            ? comparisonTotalSpend / comparisonData.spendCount
-            : 0
-
-        const percentageChanges: PercentageChanges = {
-          totalSpends: calculateChange(
-            yesterdayTotalSpend,
-            comparisonTotalSpend
-          ),
-          totalTransactions: calculateChange(
-            yesterdayData.totalTransactions,
-            comparisonData.totalTransactions
-          ),
-          totalCreditCreated: calculateChange(
-            yesterdayTotalCredit,
-            comparisonTotalCredit
-          ),
-          totalSpendTransactions: calculateChange(
-            yesterdayData.spendCount,
-            comparisonData.spendCount
-          ),
-          averageSpend: calculateChange(yesterdayAvgSpend, comparisonAvgSpend),
-          activeCards: calculateChange(
-            yesterdayData.activeCards,
-            comparisonData.activeCards
-          ),
-          uniqueUsers: calculateChange(
-            yesterdayData.activeUsers,
-            comparisonData.activeUsers
-          ),
-        }
-
-        setChanges(percentageChanges)
-        setCache(cacheKey, percentageChanges)
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred")
         setChanges(null)

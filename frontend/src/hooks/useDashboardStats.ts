@@ -69,6 +69,7 @@ export function useStats(timeframe: string) {
     gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    refetchInterval: 6 * 60 * 1000,
     retry: 1,
   })
 
