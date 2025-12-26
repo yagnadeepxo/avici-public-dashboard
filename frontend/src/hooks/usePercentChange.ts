@@ -307,6 +307,12 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
             }
           )
 
+          // Calculate average values for the periods
+          const currentAvgActiveCards = currentSums.activeCards / currentPeriodData.length
+          const previousAvgActiveCards = previousSums.activeCards / previousPeriodData.length
+          const currentAvgActiveUsers = currentSums.activeUsers / currentPeriodData.length
+          const previousAvgActiveUsers = previousSums.activeUsers / previousPeriodData.length
+
           // Calculate average spend per transaction
           const currentAvgSpend =
             currentSums.spendCount > 0
@@ -337,8 +343,8 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
               previousSums.spendCount
             ),
             averageSpend: calculateChange(currentAvgSpend, previousAvgSpend),
-            activeCards: calculateChange(currentSums.activeCards, previousSums.activeCards),
-            uniqueUsers: calculateChange(currentSums.activeUsers, previousSums.activeUsers),
+            activeCards: calculateChange(currentAvgActiveCards, previousAvgActiveCards),
+            uniqueUsers: calculateChange(currentAvgActiveUsers, previousAvgActiveUsers),
           }
 
           setChanges(percentageChanges)
