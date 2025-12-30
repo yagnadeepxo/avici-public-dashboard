@@ -45,7 +45,7 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
   // For 30d and 7d, use period aggregation; for others, use daily data
   const shouldUsePeriodAggregation = daysBack === 30 || daysBack === 7
   
-  let cumulativeData: Array<{ date: string; cumulativeSpendUSD: number }> = []
+  let cumulativeData: Array<{ date: string; cumulativeSpendUSD: number; isOngoing?: boolean }> = []
   
   if (shouldUsePeriodAggregation && data?.graphData) {
     // Sort data by timestamp (oldest first)
@@ -89,8 +89,9 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
       cumulativeData = monthlyArray.map((data, index, array) => {
         runningTotal += data.sum
         return {
-          date: index === array.length - 1 && data.isCurrent ? `${data.month} (ongoing)` : data.month,
+          date: index === array.length - 1 && data.isCurrent ? `${data.month}*` : data.month,
           cumulativeSpendUSD: runningTotal,
+          isOngoing: index === array.length - 1 && data.isCurrent,
         }
       })
     } else if (daysBack === 7) {
@@ -151,8 +152,9 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
           })}`
           
           return {
-            date: isLast && !period.isComplete ? `${dateLabel} (ongoing)` : dateLabel,
+            date: isLast && !period.isComplete ? `${dateLabel}*` : dateLabel,
             cumulativeSpendUSD: runningTotal,
+            isOngoing: isLast && !period.isComplete,
           }
         })
       }
@@ -210,6 +212,14 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0]?.payload?.isOngoing) {
+                    // Remove * and add (ongoing) for tooltip
+                    const cleanLabel = label.replace(/\*$/, '')
+                    return `${cleanLabel} (ongoing)`
+                  }
+                  return label
+                }}
                 formatter={(val: number) => [
                   `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                   "Cumulative Spend",

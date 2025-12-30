@@ -363,3 +363,20 @@ export function usePercentChange(daysBack: number = 1): PercentChangeResponse {
 
   return { changes, loading, error }
 }
+
+
+
+// Summed metrics (total across period):
+
+// totalSpends
+// totalTransactions
+// totalCreditCreated
+// totalSpendTransactions
+
+// Averaged metrics (daily average across period):
+
+// activeCards = Sum / Number of days
+// uniqueUsers = Sum / Number of days
+// averageSpend = Total spend / Total spend count
+
+// Then percentage change is calculated for all: (Current - Previous) / Previous × 100

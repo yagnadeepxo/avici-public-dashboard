@@ -45,7 +45,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
   // For other timeframes, show daily data
   const shouldUsePeriodAggregation = daysBack === 30 || daysBack === 7
   
-  let dailyData: Array<{ date: string; dailySpendUSD: number }> = []
+  let dailyData: Array<{ date: string; dailySpendUSD: number; isOngoing?: boolean }> = []
   
   if (shouldUsePeriodAggregation && data?.graphData) {
     // Sort data by timestamp (oldest first)
@@ -84,8 +84,9 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
           return monthA - monthB
         })
         .map(([_, data], index, array) => ({
-          date: index === array.length - 1 && data.isCurrent ? `${data.month} (ongoing)` : data.month,
+          date: index === array.length - 1 && data.isCurrent ? `${data.month}*` : data.month,
           dailySpendUSD: data.sum,
+          isOngoing: index === array.length - 1 && data.isCurrent,
         }))
     } else if (daysBack === 7) {
       // For 7d: Group into 7-day periods starting from Sunday
@@ -142,8 +143,9 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
           })}`
           
           return {
-            date: isLast && !period.isComplete ? `${dateLabel} (ongoing)` : dateLabel,
+            date: isLast && !period.isComplete ? `${dateLabel}*` : dateLabel,
             dailySpendUSD: period.sum,
+            isOngoing: isLast && !period.isComplete,
           }
         })
       }
@@ -192,6 +194,14 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0]?.payload?.isOngoing) {
+                    // Remove * and add (ongoing) for tooltip
+                    const cleanLabel = label.replace(/\*$/, '')
+                    return `${cleanLabel} (ongoing)`
+                  }
+                  return label
+                }}
                 formatter={(val: number) => [
                   `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                   daysBack === 30 ? "Monthly Volume" : daysBack === 7 ? "7D Period Volume" : "Daily Spend",
