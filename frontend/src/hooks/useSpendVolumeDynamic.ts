@@ -61,16 +61,25 @@ export const useSpendVolumeDynamic = (
       let timeEnd: string
       
       if (daysBack === 30) {
-        // For 30d: Start from January 1st of current year, end at today (to include current month even if incomplete)
-        const januaryFirst = new Date(Date.UTC(now.getUTCFullYear(), 0, 1, 0, 0, 0, 0))
-        timeStart = januaryFirst.toISOString()
-        timeEnd = today.toISOString() // Include today for current month
+        // For 30d: Fetch past 12 months of data (to show monthly aggregates for the last year)
+        const endOfToday = new Date(today)
+        endOfToday.setUTCHours(23, 59, 59, 999)
+        timeEnd = endOfToday.toISOString()
+        
+        // Start from 12 months ago (same day, 12 months back)
+        const startDate = new Date(today)
+        startDate.setUTCMonth(startDate.getUTCMonth() - 12)
+        startDate.setUTCHours(0, 0, 0, 0)
+        timeStart = startDate.toISOString()
       } else if (daysBack === 7) {
-        // For 7d: Fetch enough data and include up to today (to show incomplete periods)
+        // For 7d: Fetch enough data and include up to end of today (to show incomplete periods)
         const startDate = new Date(today)
         startDate.setUTCDate(startDate.getUTCDate() - 180) // Fetch 180 days back
         timeStart = startDate.toISOString()
-        timeEnd = today.toISOString() // Include today for incomplete periods
+        // Set timeEnd to end of today (23:59:59.999) to include full day's data
+        const endOfToday = new Date(today)
+        endOfToday.setUTCHours(23, 59, 59, 999)
+        timeEnd = endOfToday.toISOString()
       } else {
         // For other timeframes: yesterday at end of day (23:59:59.999 UTC)
         const yesterday = new Date(today)

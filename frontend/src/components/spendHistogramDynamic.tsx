@@ -72,7 +72,8 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
         }
         const monthData = monthlyData.get(monthKey)!
         monthData.sum += item.totalSpend / 100 // convert cents → dollars
-        monthData.isCurrent = isCurrent // Update in case of multiple entries
+        // Mark as current if ANY data point in this month is from the current month
+        monthData.isCurrent = monthData.isCurrent || isCurrent
       })
       
       // Convert to array and sort by month (chronologically)
@@ -167,7 +168,7 @@ export function SpendHistogramDynamic({ timeFrame = "24h", daysBack }: SpendHist
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground mb-2">
           {daysBack === 30 
-            ? `Monthly Spend Volume` 
+            ? `Monthly Spend Volume (Last 12 Months)` 
             : daysBack === 7
             ? `7D Period Spend Volume`
             : `Daily Spend Volume (Last ${daysBack} Days)`}
