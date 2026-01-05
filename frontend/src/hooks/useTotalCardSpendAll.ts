@@ -53,7 +53,7 @@ export const useTotalCardSpendAll = (
   const { data, isLoading, error } = useQuery<UserStatsResponse>({
     queryKey: ["totalCardSpendAll", timeFrame, timeStart, timeEnd || "default"],
     queryFn: async () => {
-      // Use provided timeEnd or yesterday at end of day (normalized to UTC day boundaries)
+      // Use provided timeEnd or yesterday at end of day (23:59:59.999 UTC)
       let endDate = timeEnd
       if (!endDate) {
         const now = new Date()

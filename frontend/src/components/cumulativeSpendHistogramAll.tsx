@@ -41,11 +41,14 @@ export function CumulativeSpendGraph() {
   const cumulativeData =
     data?.graphData?.map((item) => {
       runningTotal += item.totalSpend / 100 // convert cents → dollars
+      const date = new Date(item.timestamp)
       return {
-        date: new Date(item.timestamp).toLocaleDateString("en-US", {
+        date: date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
+          year: "numeric",
         }),
+        dateFull: item.timestamp, // Keep full timestamp for tooltip
         cumulativeSpendUSD: runningTotal,
       }
     }) || []
@@ -78,6 +81,17 @@ export function CumulativeSpendGraph() {
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0]?.payload?.dateFull) {
+                    const date = new Date(payload[0].payload.dateFull)
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  }
+                  return label
+                }}
                 formatter={(val: number) => [`$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "Cumulative Spend"]}
               />
               {/* Black trendline for cumulative spend */}

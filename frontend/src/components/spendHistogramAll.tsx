@@ -42,13 +42,18 @@ export function SpendHistogramAll() {
   }
 
   const dailyData =
-    data?.graphData?.map((item) => ({
-      date: new Date(item.timestamp).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      dailySpendUSD: item.totalSpend / 100, // convert cents → dollars
-    })) || []
+    data?.graphData?.map((item) => {
+      const date = new Date(item.timestamp)
+      return {
+        date: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
+        dateFull: item.timestamp, // Keep full timestamp for tooltip
+        dailySpendUSD: item.totalSpend / 100, // convert cents → dollars
+      }
+    }) || []
 
   return (
     <Card className="border border-border bg-background">
@@ -84,6 +89,17 @@ export function SpendHistogramAll() {
                 contentStyle={{ color: "#000" }}
                 labelStyle={{ color: "#000" }}
                 itemStyle={{ color: "#000" }}
+                labelFormatter={(label, payload) => {
+                  if (payload && payload[0]?.payload?.dateFull) {
+                    const date = new Date(payload[0].payload.dateFull)
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  }
+                  return label
+                }}
                 formatter={(val: number) => [
                   `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                   "Daily Spend",
