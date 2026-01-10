@@ -22,26 +22,6 @@ interface CumulativeSpendDynamicProps {
 export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: CumulativeSpendDynamicProps) {
   const { data, loading, error } = useSpendVolumeDynamic(timeFrame, daysBack)
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading cumulative spend data...
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-red-500">
-          Error: {error}
-        </CardContent>
-      </Card>
-    )
-  }
-
   // For 30d and 7d, use period aggregation; for others, use daily data
   const shouldUsePeriodAggregation = daysBack === 30 || daysBack === 7
   
@@ -54,7 +34,7 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
     )
     
     if (daysBack === 30) {
-      // For 30d: Group by month (Jan, Feb, Mar, etc.) starting from January
+      // For 30d: Group by month (Mar, Apr, May, etc.) starting from March
       const now = new Date()
       const currentYear = now.getUTCFullYear()
       const currentMonth = now.getUTCMonth()
@@ -183,16 +163,24 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground mb-2">
-          {daysBack === 30 
-            ? `Cumulative Monthly Spend Volume` 
-            : daysBack === 7
-            ? `Cumulative 7D Period Spend Volume`
-            : `Cumulative Spend Over Time`}
-        </p>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={cumulativeData}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-muted-foreground">
+            {daysBack === 30 
+              ? `Cumulative Monthly Spend Volume` 
+              : daysBack === 7
+              ? `Cumulative 7D Period Spend Volume`
+              : `Cumulative Spend Over Time`}
+          </p>
+        </div>
+        {error && (
+          <p className="text-xs text-red-500 mb-2">
+            Error: {error}
+          </p>
+        )}
+        {data && (
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={cumulativeData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -233,9 +221,17 @@ export function CumulativeSpendDynamic({ timeFrame = "24h", daysBack }: Cumulati
                 strokeWidth={1.8}
                 dot={false}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[300px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">
+              No data available
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

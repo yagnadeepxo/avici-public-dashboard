@@ -14,6 +14,7 @@ require("dotenv").config();
 const walletTransactionRoute = require("./routes/wallet_transaction_route/wallet_transaction");
 const walletSwapRoute = require("./routes/wallet_swap_route/wallet_swaps");
 const dailyAlltimeStatsRoute = require("./routes/daily_alltime_stats_route/daily_alltime_stats");
+const ironSummaryRoute = require("./routes/iron_route/iron_summary");
 const app = express();
 
 // ✅ Enable CORS
@@ -82,6 +83,9 @@ app.get("/api/stats", async (req, res) => {
 //app.use("/api/wallet", walletTransactionRoute);
 //app.use("/api/wallet", walletSwapRoute);
 app.use("/api/daily-alltime-stats", dailyAlltimeStatsRoute);
+app.use("/api/iron", ironSummaryRoute);
+console.log("✅ Iron summary route registered at /api/iron");
+console.log("✅ Available routes: /api/iron/summary, /api/iron/daily-summary, /api/iron/period-summary");
 // ⏰ Cron Jobs
 //cron.schedule("0 * * * *", runHourlyJob); // every hour
 //cron.schedule("0 0 * * *", runDailyJob);  // every day at midnight

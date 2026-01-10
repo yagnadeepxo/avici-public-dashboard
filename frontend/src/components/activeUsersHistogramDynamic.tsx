@@ -44,26 +44,6 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
     )
   }
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading active card data...
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-red-500">
-          Error: {error}
-        </CardContent>
-      </Card>
-    )
-  }
-
   const graphData =
     data?.graphData?.map((item) => ({
       date: new Date(item.timestamp).toLocaleDateString("en-US", {
@@ -79,9 +59,13 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
         <p className="text-sm text-muted-foreground mb-2">
           Daily Active Cards (Last {daysBack} Days)
         </p>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={graphData}>
+        {error && (
+          <p className="text-xs text-red-500 mb-2">Error: {error}</p>
+        )}
+        {data && (
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={graphData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -120,9 +104,15 @@ export function ActiveUserDynamic({ timeFrame = "24h", daysBack }: ActiveUserDyn
                 strokeWidth={1.8}
                 dot={false}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[300px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">No data available</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

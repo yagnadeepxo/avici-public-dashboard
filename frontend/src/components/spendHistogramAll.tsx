@@ -15,35 +15,11 @@ import { Card, CardContent } from "@/components/ui/card"
 export function SpendHistogramAll() {
   const { data, loading, error } = useTotalCardSpendAll()
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-muted-foreground"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
-          Loading daily spend data...
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent 
-          className="p-6 text-center text-sm text-red-500"
-          style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-        >
-          Error: {error}
-        </CardContent>
-      </Card>
-    )
-  }
-
   const dailyData =
     data?.graphData?.map((item) => {
       const date = new Date(item.timestamp)
+      // Ensure daily spend is never negative
+      const dailySpend = Math.max(0, (typeof item.totalSpend === 'number' ? item.totalSpend : parseFloat(String(item.totalSpend))) / 100)
       return {
         date: date.toLocaleDateString("en-US", {
           month: "short",
@@ -51,7 +27,7 @@ export function SpendHistogramAll() {
           year: "numeric",
         }),
         dateFull: item.timestamp, // Keep full timestamp for tooltip
-        dailySpendUSD: item.totalSpend / 100, // convert cents → dollars
+        dailySpendUSD: dailySpend,
       }
     }) || []
 
@@ -64,9 +40,18 @@ export function SpendHistogramAll() {
         >
           Daily Spend Volume
         </p>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={dailyData}>
+        {error && (
+          <p 
+            className="text-xs text-red-500 mb-2"
+            style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+          >
+            Error: {error}
+          </p>
+        )}
+        {data && (
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={dailyData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -82,7 +67,13 @@ export function SpendHistogramAll() {
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: "#888", fontSize: 12 }}
-                tickFormatter={(val) => `$${Number(val).toLocaleString('en-US')}`}
+                tickFormatter={(val) => {
+                  // Ensure we never show negative values
+                  const value = Math.max(0, Number(val))
+                  return `$${value.toLocaleString('en-US')}`
+                }}
+                domain={[0, 'auto']}
+                allowDataOverflow={false}
               />
               <Tooltip
                 cursor={{ fill: "rgba(0,0,0,0.05)" }}
@@ -100,10 +91,14 @@ export function SpendHistogramAll() {
                   }
                   return label
                 }}
-                formatter={(val: number) => [
-                  `$${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-                  "Daily Spend",
-                ]}
+                formatter={(val: number) => {
+                  // Ensure we never show negative values in tooltip
+                  const value = Math.max(0, val)
+                  return [
+                    `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                    "Daily Spend",
+                  ]
+                }}
               />
               {/* Dark grey bars for daily spend */}
               <Bar
@@ -112,9 +107,20 @@ export function SpendHistogramAll() {
                 fill="rgba(0, 0, 0, 0.4)"
                 radius={[4, 4, 0, 0]}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[300px] flex items-center justify-center">
+            <p 
+              className="text-sm text-muted-foreground"
+              style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+            >
+              No data available
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

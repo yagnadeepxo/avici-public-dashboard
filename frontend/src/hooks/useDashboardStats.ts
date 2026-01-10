@@ -3,10 +3,11 @@
 import { useQuery } from "@tanstack/react-query"
 
 export interface Stats {
-  totalSpends: number
-  totalCreditCreated: number
+  timeframe?: string
+  totalSpends: string | number
+  totalCreditCreated: string | number
   totalTransactions: number
-  averageSpend: number
+  averageSpend: string | number
   activeCards: number
   uniqueUsers: number
   spendTransactionCount: number
@@ -45,15 +46,18 @@ export function useStats(timeframe: string) {
     }
   }
 
-  const normalizedTimeframe = timeframe?.toUpperCase() || "ALL"
+  const normalizedTimeframe = timeframe?.toLowerCase() || ""
+  const queryTimeframe = normalizedTimeframe === "all" ? "" : normalizedTimeframe
 
-  const { data, isLoading, error } = useQuery<Stats>({
-    queryKey: ["dashboardStats", normalizedTimeframe],
+  // Get cached data from sessionStorage to use as placeholder
+  const cacheKey = `dashboardStats:${queryTimeframe || "all"}`
+  const cachedData = getCache<Stats>(cacheKey)
+
+  const { data, isLoading, isFetching, error } = useQuery<Stats>({
+    queryKey: ["dashboardStats", queryTimeframe],
     queryFn: async () => {
-      const params =
-        normalizedTimeframe === "ALL" ? "" : `?timeframe=${normalizedTimeframe}`
+      const params = queryTimeframe === "" ? "" : `?timeframe=${queryTimeframe}`
 
-      const cacheKey = `dashboardStats:${normalizedTimeframe}`
       const cached = getCache<Stats>(cacheKey)
       if (cached) {
         return cached
@@ -65,6 +69,7 @@ export function useStats(timeframe: string) {
       setCache(cacheKey, json)
       return json
     },
+    placeholderData: (previousData) => previousData || cachedData || undefined,
     staleTime: CACHE_TTL_MS,
     gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false,
@@ -75,7 +80,8 @@ export function useStats(timeframe: string) {
 
   return {
     data: data || null,
-    loading: isLoading && !data,
+    loading: isFetching && !!data, // Only show loading when we have data and are fetching (silent on initial load)
+    isFetching, // Expose isFetching for loading indicator
     error: error ? (error as Error).message : null,
   }
 }

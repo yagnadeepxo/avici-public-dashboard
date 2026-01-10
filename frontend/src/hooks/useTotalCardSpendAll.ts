@@ -16,7 +16,7 @@ interface UserStatsResponse {
 
 export const useTotalCardSpendAll = (
   timeFrame = "24h",
-  timeStart = "2025-01-01T00:00:00Z",
+  timeStart = "2025-03-01T00:00:00Z",
   timeEnd?: string
 ) => {
   const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -50,29 +50,29 @@ export const useTotalCardSpendAll = (
     }
   }
 
-  const { data, isLoading, error } = useQuery<UserStatsResponse>({
+  // Pre-compute cache key and get cached data to use as placeholder
+  let endDate = timeEnd
+  if (!endDate) {
+    const now = new Date()
+    const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+    const yesterday = new Date(today)
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+    yesterday.setUTCHours(23, 59, 59, 999)
+    endDate = yesterday.toISOString()
+  }
+  const startDate = new Date(timeStart)
+  const normalizedTimeStart = new Date(Date.UTC(
+    startDate.getUTCFullYear(),
+    startDate.getUTCMonth(),
+    startDate.getUTCDate(),
+    0, 0, 0, 0
+  )).toISOString()
+  const cacheKey = `totalCardSpendAll:${timeFrame}:${normalizedTimeStart}:${endDate}`
+  const cachedData = getCache<UserStatsResponse>(cacheKey)
+
+  const { data, isLoading, isFetching, error } = useQuery<UserStatsResponse>({
     queryKey: ["totalCardSpendAll", timeFrame, timeStart, timeEnd || "default"],
     queryFn: async () => {
-      // Use provided timeEnd or yesterday at end of day (23:59:59.999 UTC)
-      let endDate = timeEnd
-      if (!endDate) {
-        const now = new Date()
-        const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
-        const yesterday = new Date(today)
-        yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-        yesterday.setUTCHours(23, 59, 59, 999)
-        endDate = yesterday.toISOString()
-      }
-      
-      // Normalize timeStart to start of day (00:00:00.000 UTC) for consistency
-      const startDate = new Date(timeStart)
-      const normalizedTimeStart = new Date(Date.UTC(
-        startDate.getUTCFullYear(),
-        startDate.getUTCMonth(),
-        startDate.getUTCDate(),
-        0, 0, 0, 0
-      )).toISOString()
-      const cacheKey = `totalCardSpendAll:${timeFrame}:${normalizedTimeStart}:${endDate}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached
@@ -92,6 +92,7 @@ export const useTotalCardSpendAll = (
       setCache(cacheKey, json)
       return json
     },
+    placeholderData: cachedData || undefined,
     staleTime: CACHE_TTL_MS,
     gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false, // Don't refetch if data is fresh
@@ -102,7 +103,7 @@ export const useTotalCardSpendAll = (
 
   return {
     data: data || null,
-    loading: isLoading && !data, // Only show loading if we don't have cached data
+    loading: isFetching && !!data, // Only show loading when we have data and are fetching (silent on initial load)
     error: error ? (error as Error).message : null,
   }
 }

@@ -16,7 +16,7 @@ interface UserStatsResponse {
 
 export const useActiveCardsAll = (
   timeFrame = "24h",
-  timeStart = "2025-01-01T00:00:00Z",
+  timeStart = "2025-03-01T00:00:00Z",
   timeEnd?: string
 ) => {
   const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes

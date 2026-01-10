@@ -7,40 +7,18 @@ import { useSpendVolume7dData } from "@/hooks/useSpendVolume7d"
 export function SpendVolume7d() {
   const { data, loading, error } = useSpendVolume7dData()
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">7-Day Spend Volume</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">Loading histogram data...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">7-Day Spend Volume</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-red-500 text-sm">Error: {error}</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-sm font-semibold">7-Day Spend Volume</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
+        {error && (
+          <p className="text-red-500 text-sm mb-2">Error: {error}</p>
+        )}
+        {data && (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
             <XAxis 
               label={{ value: 'Day', position: 'insideBottom', offset: -5, style: { fontSize: 12 } }}
@@ -67,9 +45,15 @@ export function SpendVolume7d() {
                 fontSize: '12px'
               }}
             />
-            <Bar dataKey="spend" fill="black" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+              <Bar dataKey="spend" fill="black" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[280px] flex items-center justify-center">
+            <p className="text-muted-foreground text-sm">No data available</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

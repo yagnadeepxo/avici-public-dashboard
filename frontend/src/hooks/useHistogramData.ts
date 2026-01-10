@@ -39,26 +39,23 @@ export function useHistogramData() {
     }
   }
 
-  const { data, isLoading, error } = useQuery<HistogramDataPoint[]>({
+  // Pre-compute cache key and get cached data to use as placeholder
+  const now = new Date()
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
+  const yesterday = new Date(today)
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1)
+  yesterday.setUTCHours(23, 59, 59, 999)
+  const timeEnd = yesterday.toISOString()
+  const startDate = new Date(yesterday)
+  startDate.setUTCDate(startDate.getUTCDate() - 23)
+  startDate.setUTCHours(0, 0, 0, 0)
+  const timeStart = startDate.toISOString()
+  const cacheKey = `histogramData:${timeStart}:${timeEnd}`
+  const cachedData = getCache<HistogramDataPoint[]>(cacheKey)
+
+  const { data, isLoading, isFetching, error } = useQuery<HistogramDataPoint[]>({
     queryKey: ['histogramData'],
     queryFn: async () => {
-      // Fetch last 24 days of daily data
-      const now = new Date()
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0))
-      
-      // End date: yesterday at end of day (23:59:59.999 UTC)
-      const yesterday = new Date(today)
-      yesterday.setUTCDate(yesterday.getUTCDate() - 1)
-      yesterday.setUTCHours(23, 59, 59, 999)
-      const timeEnd = yesterday.toISOString()
-      
-      // Start date: 24 days before yesterday (to get 24 complete days)
-      const startDate = new Date(yesterday)
-      startDate.setUTCDate(startDate.getUTCDate() - 23) // 24 days total (including yesterday)
-      startDate.setUTCHours(0, 0, 0, 0)
-      const timeStart = startDate.toISOString()
-
-      const cacheKey = `histogramData:${timeStart}:${timeEnd}`
       const cached = getCache<HistogramDataPoint[]>(cacheKey)
       if (cached) {
         return cached
@@ -111,6 +108,7 @@ export function useHistogramData() {
       setCache(cacheKey, daily)
       return daily
     },
+    placeholderData: cachedData || undefined,
     staleTime: 1800000, // 30 minutes cache - data is fresh for 30 minutes
     gcTime: 3600000, // 1 hour - keep in cache for 1 hour
     refetchOnMount: false, // Don't refetch if data is fresh
@@ -121,7 +119,7 @@ export function useHistogramData() {
 
   return {
     data: data || [],
-    loading: isLoading && !data, // Only show loading if we don't have cached data
+    loading: isFetching && !!data, // Only show loading when we have data and are fetching (silent on initial load)
     error: error ? (error as Error).message : null,
   }
 }

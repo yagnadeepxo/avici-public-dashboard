@@ -8,53 +8,18 @@ export function TransactionHistogram() {
   const { data, loading, error } = useHistogramData()
   console.log(data)
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-card">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm font-semibold">Hourly Transaction Count (UTC)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <p className="text-muted-foreground text-sm">Loading histogram data...</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-card">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm font-semibold">Hourly Transaction Count (UTC)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <p className="text-red-500 text-sm">Error: {error}</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!data || data.length === 0) {
-    return (
-      <Card className="border border-border bg-card">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-sm font-semibold">Hourly Transaction Count (UTC)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 pt-0">
-          <p className="text-muted-foreground text-sm">No data available</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className="border border-border bg-card">
       <CardHeader className="p-4 pb-2">
         <CardTitle className="text-sm font-semibold">Hourly Transaction Count (UTC)</CardTitle>
       </CardHeader>
       <CardContent className="p-4 pt-0">
-      <ResponsiveContainer width="100%" height={250}>
-  <BarChart data={data}>
+        {error && (
+          <p className="text-red-500 text-sm mb-2">Error: {error}</p>
+        )}
+        {data && data.length > 0 && (
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={data}>
     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
     <XAxis 
         dataKey="hour" 
@@ -80,9 +45,15 @@ export function TransactionHistogram() {
         padding: '6px 8px',
       }}
     />
-    <Bar dataKey="count" fill="rgba(0, 0, 0, 0.08)" radius={[3, 3, 0, 0]} />
-  </BarChart>
-</ResponsiveContainer>
+              <Bar dataKey="count" fill="rgba(0, 0, 0, 0.08)" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+        {(!data || data.length === 0) && !loading && !error && (
+          <div className="w-full h-[250px] flex items-center justify-center">
+            <p className="text-muted-foreground text-sm">No data available</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

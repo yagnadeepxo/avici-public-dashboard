@@ -153,14 +153,6 @@ export default function Dashboard() {
               </div>
             )}
             
-            {loading && (
-              <p 
-                className="text-muted-foreground text-sm"
-                style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
-              >
-                Loading stats...
-              </p>
-            )}
             {error && (
               <p 
                 className="text-red-500 text-sm"
@@ -175,7 +167,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <ShareableStatCard
                     label="Total Spends"
-                    value={`$${(data.totalSpends / 100).toLocaleString('en-US')}`}
+                    value={`$${((typeof data.totalSpends === 'string' ? parseFloat(data.totalSpends) : data.totalSpends) / 100).toLocaleString('en-US')}`}
                     change={activeChanges?.totalSpends}
                     showChange={shouldShowChanges}
                     timePeriod={timePeriod}
@@ -202,7 +194,7 @@ export default function Dashboard() {
                   />
                   <ShareableStatCard
                     label="Total Credit Created"
-                    value={`$${(data.totalCreditCreated / 100).toLocaleString('en-US')}`}
+                    value={`$${((typeof data.totalCreditCreated === 'string' ? parseFloat(data.totalCreditCreated) : data.totalCreditCreated) / 100).toLocaleString('en-US')}`}
                     change={activeChanges?.totalCreditCreated}
                     showChange={shouldShowChanges}
                     timePeriod={timePeriod}
@@ -211,7 +203,7 @@ export default function Dashboard() {
                   />
                   <ShareableStatCard
                     label="Average Spend"
-                    value={`$${(data.averageSpend / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    value={`$${((typeof data.averageSpend === 'string' ? parseFloat(data.averageSpend) : data.averageSpend) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     change={activeChanges?.averageSpend}
                     showChange={shouldShowChanges}
                     timePeriod={timePeriod}
@@ -268,6 +260,16 @@ export default function Dashboard() {
                     
                   </div>
                 )}
+
+                {/* Description */}
+                <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border/50">
+                  <p 
+                    className="text-sm text-muted-foreground leading-relaxed"
+                    style={{ fontFamily: '"SF Pro Rounded", system-ui, -apple-system, sans-serif' }}
+                  >
+                    <strong className="text-foreground">Total credit created</strong> refers to users depositing USDC or other supported assets into the card loan contract, which tops up the credit spend balance. <strong className="text-foreground">Total spends</strong> refers to users or businesses spending via our card at online or offline merchants. <strong className="text-foreground">Total transactions</strong> refers to card top ups and spend transactions.
+                  </p>
+                </div>
 
               </>
             )}

@@ -15,35 +15,21 @@ import { useHistogramData } from "@/hooks/useHistogramData"
 export function SpendHistogram() {
   const { data, loading, error } = useHistogramData()
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading daily spend data...
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-red-500">
-          Error: {error}
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className="border border-border bg-background">
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground mb-2">
           Daily Spend Volume (Last 24 Days)
         </p>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data}>
+        {error && (
+          <p className="text-xs text-red-500 mb-2">
+            Error: {error}
+          </p>
+        )}
+        {data && (
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={data}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -89,9 +75,17 @@ export function SpendHistogram() {
                 fill="rgba(0, 0, 0, 0.4)"
                 radius={[4, 4, 0, 0]}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[300px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">
+              No data available
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

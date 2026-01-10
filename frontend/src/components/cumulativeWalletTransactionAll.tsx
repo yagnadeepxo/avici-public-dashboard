@@ -15,26 +15,6 @@ import { Card, CardContent } from "@/components/ui/card"
 export function CumulativeTransactionVolume() {
   const { data, loading, error } = useWalletTransactionAll()
 
-  if (loading) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-muted-foreground">
-          Loading cumulative transaction data...
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (error) {
-    return (
-      <Card className="border border-border bg-background">
-        <CardContent className="p-6 text-center text-sm text-red-500">
-          Error: {error}
-        </CardContent>
-      </Card>
-    )
-  }
-
   // Compute cumulative transaction volume over time
   let runningTotal = 0
   const cumulativeData =
@@ -55,9 +35,13 @@ export function CumulativeTransactionVolume() {
         <p className="text-sm text-muted-foreground mb-2">
           Cumulative Transaction Volume
         </p>
-        <div className="w-full h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={cumulativeData}>
+        {error && (
+          <p className="text-xs text-red-500 mb-2">Error: {error}</p>
+        )}
+        {data && (
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={cumulativeData}>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="rgba(0,0,0,0.05)"
@@ -90,9 +74,15 @@ export function CumulativeTransactionVolume() {
                 strokeWidth={1.8}
                 dot={false}
               />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+        {!data && !loading && !error && (
+          <div className="w-full h-[300px] flex items-center justify-center">
+            <p className="text-sm text-muted-foreground">No data available</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

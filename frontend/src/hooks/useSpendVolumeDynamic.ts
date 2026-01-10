@@ -50,7 +50,11 @@ export const useSpendVolumeDynamic = (
     }
   }
 
-  const { data, isLoading, error } = useQuery<UserStatsResponse>({
+  // Get cached data from sessionStorage to use as placeholder
+  const cacheKey = `spendVolumeDynamic:${timeFrame}:${daysBack}`
+  const cachedData = getCache<UserStatsResponse>(cacheKey)
+
+  const { data, isLoading, isFetching, error } = useQuery<UserStatsResponse>({
     queryKey: ["spendVolumeDynamic", timeFrame, daysBack],
     queryFn: async () => {
       // Normalize dates to UTC day boundaries for consistency
@@ -94,7 +98,6 @@ export const useSpendVolumeDynamic = (
         timeStart = startDate.toISOString()
       }
 
-      const cacheKey = `spendVolumeDynamic:${timeFrame}:${daysBack}`
       const cached = getCache<UserStatsResponse>(cacheKey)
       if (cached) {
         return cached
@@ -115,6 +118,7 @@ export const useSpendVolumeDynamic = (
       setCache(cacheKey, json)
       return json
     },
+    placeholderData: (previousData) => previousData || cachedData || undefined,
     staleTime: CACHE_TTL_MS,
     gcTime: CACHE_TTL_MS * 2,
     refetchOnMount: false, // Don't refetch if data is fresh
@@ -125,7 +129,7 @@ export const useSpendVolumeDynamic = (
 
   return {
     data: data || null,
-    loading: isLoading && !data, // Only show loading if we don't have cached data
+    loading: isFetching && !!data, // Only show loading when we have data and are fetching (silent on initial load)
     error: error ? (error as Error).message : null,
   }
 }

@@ -18,7 +18,7 @@ interface SwapStatsResponse {
 
 export const useWalletSwapVolume = (
   timeFrame = "24h",
-  timeStart = "2025-01-01T00:00:00Z",
+  timeStart = "2025-03-01T00:00:00Z",
   timeEnd?: string
 ) => {
   const { data, isLoading, error } = useQuery<SwapStatsResponse>({
