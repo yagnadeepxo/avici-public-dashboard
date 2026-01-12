@@ -145,16 +145,16 @@ export default function VirtualAccountsPage(props: any) {
               />
             </div>
 
-            {/* {activeTimePeriod === "all" && (
+             {/* {activeTimePeriod === "all" && (
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                   <IronOnrampVolumeHistogram />
                   <IronOfframpVolumeHistogram />
                 </div>
               </div>
-            )}
+            )} */}
 
-            {activeTimePeriod === "7d" && (
+            {/* {activeTimePeriod === "7d" && (
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                   <IronOnrampVolumeHistogram7d />
@@ -163,23 +163,23 @@ export default function VirtualAccountsPage(props: any) {
               </div>
             )}
 
-            {activeTimePeriod === "24h" && (
+             {activeTimePeriod === "24h" && (
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                   <IronOnrampVolumeHistogram24h />
                   <IronOfframpVolumeHistogram24h />
                 </div>
               </div>
-            )}
+            )} */}
 
-            {activeTimePeriod === "30d" && (
+            {/* {activeTimePeriod === "30d" && (
               <div className="grid grid-cols-1 gap-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-1 gap-3">
                   <IronOnrampVolumeHistogram30d />
                   <IronOfframpVolumeHistogram30d />
                 </div>
               </div>
-            )} */}
+            )}   */}
 
             {/* Description */}
             <div className="mt-6 p-4 bg-muted/30 rounded-lg border border-border/50">

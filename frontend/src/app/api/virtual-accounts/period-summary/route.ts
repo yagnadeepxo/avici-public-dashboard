@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 
 const UPSTREAM_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_WALLET_CRON_API_URL ||
   "http://localhost:4000"
 
 export async function GET(request: Request) {
   const incomingUrl = new URL(request.url)
-  const upstreamUrl = new URL("/api/iron/period-summary", UPSTREAM_BASE_URL)
+  const upstreamUrl = new URL("/api/ibank/period-summary", UPSTREAM_BASE_URL)
 
   incomingUrl.searchParams.forEach((value, key) => {
     upstreamUrl.searchParams.append(key, value)
