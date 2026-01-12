@@ -1,57 +1,5 @@
-const axios = require("axios");
 const { supabase } = require("../../db");
-
-/**
- * Retry logic for API calls with exponential backoff
- */
-async function retryWithBackoff(fn, maxRetries = 3) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      if (i === maxRetries - 1) throw error;
-      const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
-      console.log(`⚠️  Retry attempt ${i + 1} after ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-}
-
-/**
- * Fetch EUR to USD exchange rate for a specific date
- */
-async function fetchForexRate(date) {
-  return retryWithBackoff(async () => {
-    const response = await axios.get(
-      `https://api.frankfurter.dev/v1/${date}?from=EUR&to=USD`
-    );
-    return response.data.rates.USD;
-  });
-}
-
-/**
- * Fetch forex rates for multiple dates in parallel
- */
-async function fetchForexRates(dates) {
-  const rateMap = {};
-  const uniqueDates = [...new Set(dates)];
-  
-  console.log(`📊 Fetching forex rates for ${uniqueDates.length} unique dates...`);
-  
-  const ratePromises = uniqueDates.map(async (date) => {
-    try {
-      const rate = await fetchForexRate(date);
-      rateMap[date] = rate;
-      console.log(`✅ Fetched rate for ${date}: ${rate}`);
-    } catch (error) {
-      console.error(`❌ Failed to fetch rate for ${date}:`, error.message);
-      throw new Error(`Failed to fetch forex rate for date ${date}: ${error.message}`);
-    }
-  });
-  
-  await Promise.all(ratePromises);
-  return rateMap;
-}
+const { fetchForexRates } = require("./forex_service");
 
 /**
  * Parse JSONB field safely
